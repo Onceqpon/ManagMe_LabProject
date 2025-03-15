@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ProjectStorage } from "./utils/ProjectStorage";
 import { Project } from "./types/Project";
 import { v4 as uuidv4 } from "uuid";
+import './App.css';
 
 function App() {
   const [projects, setProjects] = useState<Project[]>(ProjectStorage.getAll());
@@ -23,7 +24,7 @@ function App() {
     ProjectStorage.delete(id);
     setProjects(ProjectStorage.getAll());
   };
-  
+
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">ManagMe - Projekty</h1>
