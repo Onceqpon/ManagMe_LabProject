@@ -1,0 +1,39 @@
+.navbar {
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #0c3652;
+  }
+  
+
+  .navbar-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+  }
+
+  .logo {
+    flex: 1; 
+  }
+  
+  .logo-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    margin: 0;
+  }
+  
+  
+  .user {
+    flex: 1; 
+    display: flex;
+    justify-content: flex-end; 
+  }
+  
+  .logged-user {
+    font-size: 1.2rem;
+    color: white;
+  }
+  

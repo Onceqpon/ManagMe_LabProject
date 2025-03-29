@@ -2,10 +2,10 @@ import React from "react";
 import { useAppLogic } from "./logicfunction/useAppLogic";
 import { StoryState } from "./types/Story";
 import { StoryPriority } from "./types/Story";
+import "./styles/App.css";
 
 function App() {
   const {
-    user,
     projects,
     activeProject,
     projectName,
@@ -25,43 +25,38 @@ function App() {
     filterStoriesByState,
   } = useAppLogic();
 
-
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold">ManagMe - Projekty</h1>
-      <p>Zalogowany: {user.firstName} {user.lastName}</p>
-
-      {/* Formularz dodawania projektu */}
-      <h2 className="mt-4 font-bold">Dodaj nowy projekt</h2>
-      <div className="mb-4">
+    <div className="app-container">
+      <h2 className="section-title">Dodaj nowy projekt</h2>
+      <div className="form-container">
         <input
           type="text"
           placeholder="Nazwa projektu"
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
-          className="border p-2 mr-2"
+          className="input-field"
         />
         <input
           type="text"
           placeholder="Opis projektu"
           value={projectDescription}
           onChange={(e) => setProjectDescription(e.target.value)}
-          className="border p-2 mr-2"
+          className="input-field"
         />
-        <button onClick={handleAddProject} className="bg-blue-500 text-white px-4 py-2">
+        <button onClick={handleAddProject} className="submit-button">
           Dodaj projekt
         </button>
       </div>
 
       {/* Lista projektów */}
-      <h2 className="mt-4 font-bold">Wybierz projekt</h2>
-      <ul className="mb-4">
+      <h2 className="section-title">Wybierz projekt</h2>
+      <ul className="project-list">
         {projects.map((project) => (
-          <li key={project.id} className="mb-1">
+          <li key={project.id} className="project-item">
             <button
               onClick={() => handleProjectSelect(project.id)}
-              className={`px-4 py-2 border rounded ${
-                activeProject === project.id ? "bg-green-500 text-white" : "bg-gray-200"
+              className={`project-button ${
+                activeProject === project.id ? "active-project" : ""
               }`}
             >
               {project.name}
@@ -73,51 +68,53 @@ function App() {
       {/* Formularz i lista historyjek */}
       {activeProject && (
         <>
-          <h3 className="font-bold">Dodaj historyjkę</h3>
-          <input
-            type="text"
-            placeholder="Nazwa"
-            value={storyName}
-            onChange={(e) => setStoryName(e.target.value)}
-            className="border p-2 mr-2"
-          />
-          <input
-            type="text"
-            placeholder="Opis"
-            value={storyDescription}
-            onChange={(e) => setStoryDescription(e.target.value)}
-            className="border p-2 mr-2"
-          />
-          <select
-            value={storyPriority}
-            onChange={(e) => setStoryPriority(e.target.value as StoryPriority)}
-            className="border p-2 mr-2"
-          >
-            <option value="niski">Niski</option>
-            <option value="średni">Średni</option>
-            <option value="wysoki">Wysoki</option>
-          </select>
-          <button onClick={handleAddStory} className="bg-blue-500 text-white px-4 py-2">
-            Dodaj
-          </button>
+          <h3 className="section-title">Dodaj historyjkę</h3>
+          <div className="form-container">
+            <input
+              type="text"
+              placeholder="Nazwa"
+              value={storyName}
+              onChange={(e) => setStoryName(e.target.value)}
+              className="input-field"
+            />
+            <input
+              type="text"
+              placeholder="Opis"
+              value={storyDescription}
+              onChange={(e) => setStoryDescription(e.target.value)}
+              className="input-field"
+            />
+            <select
+              value={storyPriority}
+              onChange={(e) => setStoryPriority(e.target.value as StoryPriority)}
+              className="input-field"
+            >
+              <option value="niski">Niski</option>
+              <option value="średni">Średni</option>
+              <option value="wysoki">Wysoki</option>
+            </select>
+            <button onClick={handleAddStory} className="submit-button">
+              Dodaj
+            </button>
+          </div>
 
           {/* Lista historyjek z możliwością zmiany statusu */}
           {["todo", "in-progress", "done"].map((state) => (
-            <div key={state}>
-              <h3 className="mt-4 font-bold">
+            <div key={state} className="state-section">
+              <h3 className="state-title">
                 {state === "todo" && "Do zrobienia"}
                 {state === "in-progress" && "W trakcie"}
                 {state === "done" && "Zakończone"}
               </h3>
-              <ul>
+              <ul className="story-list">
                 {filterStoriesByState(state as StoryState).map((story) => (
-                  <li key={story.id} className="flex items-center justify-between mb-2">
+                  <li key={story.id} className="story-item">
                     <span>
                       <strong>{story.name}</strong> ({story.priority}) - {story.description}
                     </span>
                     <button
                       onClick={() => handleChangeStoryState(story.id)}
-                      className="bg-yellow-500 text-white px-2 py-1 rounded"
+                      className="change-status-button"
                     >
                       Zmień status
                     </button>
