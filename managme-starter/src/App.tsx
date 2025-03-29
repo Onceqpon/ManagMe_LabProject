@@ -1,117 +1,30 @@
-import { useEffect, useState } from "react";
-import { Project } from "./types/Project";
-import { Story, StoryPriority, StoryState } from "./types/Story";
-import { ProjectStorage } from "./utils/ProjectStorage";
-import { ActiveProject } from "./utils/ActiveProject";
-import { UserSession } from "./utils/UserSession";
-import { StoryStorage } from "./utils/StoryStorage";
-import { v4 as uuidv4 } from "uuid";
+import React from "react";
+import { useAppLogic } from "./logicfunction/useAppLogic";
+import { StoryState } from "./types/Story";
+import { StoryPriority } from "./types/Story";
 
 function App() {
-  const user = UserSession.getLoggedUser();
+  const {
+    user,
+    projects,
+    activeProject,
+    projectName,
+    projectDescription,
+    storyName,
+    storyDescription,
+    storyPriority,
+    setProjectName,
+    setProjectDescription,
+    setStoryName,
+    setStoryDescription,
+    setStoryPriority,
+    handleAddProject,
+    handleProjectSelect,
+    handleAddStory,
+    handleChangeStoryState,
+    filterStoriesByState,
+  } = useAppLogic();
 
-  const [projects, setProjects] = useState<Project[]>(ProjectStorage.getAll());
-  const [activeProject, setActiveProject] = useState<string | null>(ActiveProject.getActive());
-  const [stories, setStories] = useState<Story[]>([]);
-
-  const [projectName, setProjectName] = useState("");
-  const [projectDescription, setProjectDescription] = useState("");
-
-  const [storyName, setStoryName] = useState("");
-  const [storyDescription, setStoryDescription] = useState("");
-  const [storyPriority, setStoryPriority] = useState<StoryPriority>("średni");
-
-  // Ładowanie historyjek po wyborze projektu
-  useEffect(() => {
-    if (activeProject) {
-      setStories(StoryStorage.getByProject(activeProject));
-    }
-  }, [activeProject]);
-
-  // Dodawanie projektu
-  const handleAddProject = () => {
-    if (!projectName || !projectDescription) return;
-
-    const newProject: Project = {
-      id: uuidv4(),
-      name: projectName,
-      description: projectDescription,
-    };
-
-    ProjectStorage.add(newProject);
-    setProjects(ProjectStorage.getAll());
-    setProjectName("");
-    setProjectDescription("");
-  };
-
-  // Wybór projektu
-  const handleProjectSelect = (id: string) => {
-    ActiveProject.setActive(id);
-    setActiveProject(id);
-    setStories(StoryStorage.getByProject(id));
-  };
-
-  // Dodawanie historyjki
-  const handleAddStory = () => {
-    if (!storyName || !activeProject) return;
-
-    const newStory: Story = {
-      id: uuidv4(),
-      name: storyName,
-      description: storyDescription,
-      priority: storyPriority,
-      projectId: activeProject,
-      createdAt: new Date().toISOString(),
-      state: "todo",
-      ownerId: user.id,
-    };
-    StoryStorage.add(newStory);
-    setStories(StoryStorage.getByProject(activeProject));
-
-    setStoryName("");
-    setStoryDescription("");
-  };
-
-  // Zmiana statusu historyjki
-  const handleChangeStoryState = (storyId: string) => {
-    if (!activeProject) return;
-
-    const allStories = StoryStorage.getByProject(activeProject);
-    const updatedStories = allStories.map((story) => {
-      if (story.id === storyId) {
-        let newState: StoryState;
-        switch (story.state) {
-          case "todo":
-            newState = "in-progress";
-            break;
-          case "in-progress":
-            newState = "done";
-            break;
-          case "done":
-          default:
-            newState = "todo";
-            break;
-        }
-        return { ...story, state: newState };
-      }
-      return story;
-    });
-
-    // Aktualizacja w localStorage
-    localStorage.setItem(
-      "stories",
-      JSON.stringify([
-        ...StoryStorage.getAll().filter((s) => s.projectId !== activeProject),
-        ...updatedStories,
-      ])
-    );
-
-    setStories(updatedStories);
-  };
-
-  // Filtrowanie historyjek po stanie
-  const filterStoriesByState = (state: StoryState) =>
-    stories.filter((story) => story.state === state);
 
   return (
     <div className="p-4">
