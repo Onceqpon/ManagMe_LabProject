@@ -2,6 +2,7 @@
 import { useProjectLogic } from "./useProjectLogic";
 import { useStoryLogic } from "./useStoryLogic";
 import { UserSession } from "../utils/UserSession";
+import { useTaskLogic } from "./useTaskLogic";
 
 export const useAppLogic = () => {
     const user = UserSession.getLoggedUser();
@@ -21,13 +22,25 @@ export const useAppLogic = () => {
         storyName,
         storyDescription,
         storyPriority,
+        activeHistory,
         setStoryName,
         setStoryDescription,
         setStoryPriority,
         handleAddStory,
-         handleChangeStoryState,
+        handleChangeStoryState,
         filterStoriesByState,
+        handleStorySelect
     } = useStoryLogic(activeProject);
+
+    const { 
+        tasks,
+        handleAddTask,
+        handleUpdateTask,
+        handleDeleteTask,
+        filterTasksByState,
+        handleAssignUser,
+        handleChangeTaskState,
+    } = useTaskLogic(activeHistory);
 
     return {
         user,
@@ -41,12 +54,21 @@ export const useAppLogic = () => {
         handleProjectSelect,
         storyName,
         storyDescription,
-         storyPriority,
+        storyPriority,
+        activeHistory,
         setStoryName,
         setStoryDescription,
         setStoryPriority,
         handleAddStory,
         handleChangeStoryState,
         filterStoriesByState,
+        handleStorySelect,
+        tasks,
+        handleAddTask,
+        handleUpdateTask,
+        handleDeleteTask,
+        filterTasksByState,
+        handleAssignUser,
+        handleChangeTaskState,
     };
 };

@@ -1,0 +1,37 @@
+.task-details-container {
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    max-width: 600px;
+    margin: auto;
+  }
+  
+  .task-details-container h3 {
+    text-align: center;
+  }
+  
+  .task-info p {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  .task-actions {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .task-actions button {
+    padding: 10px 20px;
+    margin: 5px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .task-actions button:hover {
+    background-color: #0056b3;
+  }
+  

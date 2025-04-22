@@ -2,18 +2,23 @@ import React from "react";
 import { StoryState, StoryPriority } from "../types/Story";
 import { useAppLogic } from "../logicfunction/useAppLogic";
 import "../styles/StoriesView.css";
+import CheckIcon from '@mui/icons-material/Check';
+import { Link } from "react-router-dom";
+import AddIcon from '@mui/icons-material/Add';
 
 function StoriesView() {
   const {
     storyName,
     storyDescription,
     storyPriority,
+    activeHistory,
     setStoryName,
     setStoryDescription,
     setStoryPriority,
     handleAddStory,
     filterStoriesByState,
     handleChangeStoryState,
+    handleStorySelect,
   } = useAppLogic();
 
   return (
@@ -66,8 +71,22 @@ function StoriesView() {
                   onClick={() => handleChangeStoryState(story.id)}
                   className="change-status-button"
                 >
-                  Zmień status
+                  <CheckIcon />
                 </button>
+                <Link to="/add-task">
+                <button
+                  className={`navigation-button`}
+                  >
+                    <button
+                  onClick={() => handleStorySelect(story.id)}
+                  className={`change-status-button ${
+                    activeHistory === story.id ? "active-story" : ""
+                  }`}
+                >
+                  <AddIcon />
+                </button>
+                </button>
+              </Link>
               </li>
             ))}
           </ul>

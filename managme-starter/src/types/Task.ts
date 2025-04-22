@@ -1,15 +1,22 @@
-export type TaskState = "todo" | "doing" | "done";
+export type TaskState = "todo" | "in-progress" | "done";
+export type TaskPriority = "niski" | "średni" | "wysoki";
 
+// Interfejs reprezentujący użytkownika przypisanego do zadania
+export interface AssignedUser {
+  name: string;
+  role: string;
+}
+
+// Interfejs reprezentujący zadanie
 export interface Task {
-  id: string;
-  name: string;                    
-  description: string;             
-  priority: "niski" | "średni" | "wysoki";
-  storyId: string;                 
-  estimatedTime: number;           
-  state: TaskState;                
-  createdAt: string;               
-  startDate?: string;              
-  endDate?: string;                
-  assignedTo: string;             
+  id: number;
+  name: string;
+  description: string;
+  priority: TaskPriority;
+  storyid: string;
+  state: TaskState;
+  startDate: string;
+  workedHours: number;
+  estimatedHours: number;
+  assignedUser: AssignedUser; // Użycie interfejsu AssignedUser
 }

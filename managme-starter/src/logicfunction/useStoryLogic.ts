@@ -3,6 +3,7 @@ import { Story, StoryPriority, StoryState } from "../types/Story";
 import { StoryStorage } from "../utils/StoryStorage";
 import { UserSession } from "../utils/UserSession";
 import { v4 as uuidv4 } from "uuid";
+import { ActiveHistory } from "../utils/ActiveHistory";
 
 export const useStoryLogic = (activeProject: string | null) => {
     const user = UserSession.getLoggedUser();
@@ -10,6 +11,7 @@ export const useStoryLogic = (activeProject: string | null) => {
     const [storyName, setStoryName] = useState("");
     const [storyDescription, setStoryDescription] = useState("");
     const [storyPriority, setStoryPriority] = useState<StoryPriority>("średni");
+    const [activeHistory, setActiveHistory] = useState<string | null>(ActiveHistory.getActive());
 
     useEffect(() => {
         if (activeProject) {
@@ -74,16 +76,29 @@ export const useStoryLogic = (activeProject: string | null) => {
     const filterStoriesByState = (state: StoryState) =>
         stories.filter((story) => story.state === state);
 
+    const handleProjectSelect = (id: string) => {
+            ActiveHistory.setActive(id);
+            setActiveHistory(id);
+        };
+
+    const handleStorySelect = (id: string) => {
+            ActiveHistory.setActive(id);
+            setActiveHistory(id);
+        };        
+
     return {
         storyName,
         storyDescription,
         storyPriority,
+        activeHistory,
         setStoryName,
         setStoryDescription,
         setStoryPriority,
         handleAddStory,
         handleChangeStoryState,
         filterStoriesByState,
+        handleProjectSelect,
+        handleStorySelect,
     };
 };
         
