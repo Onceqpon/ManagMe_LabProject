@@ -1,45 +1,35 @@
 import { User } from '../types/types';
 
 export class UserSession {
-  private static users: User[] = [
-    {
-      id: "1",
-      firstName: "John",
-      lastName: "Doe",
-      role: "admin",
-    },
-    {
-      id: "2",
-      firstName: "Anna",
-      lastName: "Smith",
-      role: "developer",
-    },
-    {
-      id: "3",
-      firstName: "Mike",
-      lastName: "Johnson",
-      role: "devops",
-    },
-  ];
-
-  static getLoggedUser(): User {
-    const admin = this.users.find((user) => user.role === 'admin');
-    if (!admin) {
-      return this.users[0] || {
-        id: "0",
-        firstName: "Guest",
-        lastName: "User",
-        role: "developer",
-      };
+  static async getLoggedUser(): Promise<User> {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No user logged in');
     }
-    return admin;
+
+    const response = await fetch('http://localhost:3000/user', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch user');
+    }
+
+    const user: User = await response.json();
+    return user;
   }
 
-  static getAllUsers(): User[] {
-    return this.users;
+  static async getAllUsers(): Promise<User[]> {
+    // Tymczasowo zwracamy tylko zalogowanego użytkownika
+    // W przyszłości można dodać endpoint do pobierania wszystkich użytkowników
+    const loggedUser = await this.getLoggedUser();
+    return [loggedUser];
   }
 
-  static getUserById(id: string): User | undefined {
-    return this.users.find((user) => user.id === id);
+  static async getUserById(id: string): Promise<User | undefined> {
+    const users = await this.getAllUsers();
+    return users.find((user) => user.id === id);
   }
 }

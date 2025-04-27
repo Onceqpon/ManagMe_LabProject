@@ -28,21 +28,13 @@ body {
 }
 
 .form-title {
-  text-align: center;
-  font-size: 2rem;
+  font-size: 1.25rem;
   margin-bottom: 10px;
   color: #ffffff;
 }
 
-.form-title2 {
-  text-align: center;
-  font-size: 2rem;
-  margin-bottom: 10px;
-  color: #3f3f3f;
-}
-
 .input {
-  width: 97%;
+  width: 100%;
   padding: 10px;
   margin-bottom: 10px;
   border: 1px solid #ccc;
@@ -51,7 +43,7 @@ body {
 }
 
 .textarea {
-  width: 97%;
+  width: 100%;
   padding: 10px;
   margin-bottom: 10px;
   border: 1px solid #ccc;
@@ -152,7 +144,7 @@ body {
   border-radius: 4px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   flex: 1;
-  min-width: 500px;
+  min-width: 250px;
 }
 
 .project-item-active {
@@ -166,38 +158,9 @@ body {
   color: #333;
 }
 
-@media (max-width: 768px) {
-  .project-title {
-    max-width: 70%; 
-  }
-}
-
-
-@media (max-width: 480px) {
-  .project-title {
-    font-size: 0.8rem;
-  }
-}
-
 .project-description {
   color: #666;
   font-size: 0.9rem;
-  max-width: 400px; 
-  word-break: break-word; 
-}
-
-
-@media (max-width: 768px) {
-  .project-description {
-    max-width: 70%; 
-  }
-}
-
-
-@media (max-width: 480px) {
-  .project-description {
-    font-size: 0.8rem;
-  }
 }
 
 .stories-section {
@@ -302,18 +265,6 @@ body {
 .task-meta {
   color: #888;
   font-size: 0.8rem;
-}
-
-.button-task {
-  display: flex;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin-top: 5px;
-  margin-left: auto;
 }
 
 @media (max-width: 600px) {

@@ -14,22 +14,36 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId, onBack }) => {
   const [task, setTask] = useState<Task | null>(null);
   const [story, setStory] = useState<Story | null>(null);
   const [stories, setStories] = useState<Story[]>([]);
-  const [users] = useState<User[]>(UserSession.getAllUsers().filter((u) => u.role === 'devops' || u.role === 'developer'));
+  const [users, setUsers] = useState<User[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editTask, setEditTask] = useState<Task | null>(null);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
 
   useEffect(() => {
-    const fetchedTask = ProjectStorage.getTaskById(taskId);
-    if (fetchedTask) {
-      setTask(fetchedTask);
-      setEditTask(fetchedTask);
-      const fetchedStory = ProjectStorage.getStoryById(fetchedTask.storyId);
-      setStory(fetchedStory || null);
-      const projectId = fetchedStory?.projectId;
-      if (projectId) {
-        setStories(ProjectStorage.getAllStories(projectId));
+    const fetchTaskAndStories = () => {
+      const fetchedTask = ProjectStorage.getTaskById(taskId);
+      if (fetchedTask) {
+        setTask(fetchedTask);
+        setEditTask(fetchedTask);
+        const fetchedStory = ProjectStorage.getStoryById(fetchedTask.storyId);
+        setStory(fetchedStory || null);
+        const projectId = fetchedStory?.projectId;
+        if (projectId) {
+          setStories(ProjectStorage.getAllStories(projectId));
+        }
       }
-    }
+    };
+
+    const fetchUsers = async () => {
+      setIsLoadingUsers(true);
+      const allUsers = await UserSession.getAllUsers();
+      const filteredUsers = allUsers.filter((u: User) => u.role === 'devops' || u.role === 'developer');
+      setUsers(filteredUsers);
+      setIsLoadingUsers(false);
+    };
+
+    fetchTaskAndStories();
+    fetchUsers();
   }, [taskId]);
 
   const calculateWorkHours = (task: Task): number => {
@@ -159,21 +173,20 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId, onBack }) => {
                 className="input"
                 min="1"
               />
-                <select
+              <select
                 value={editTask?.assignedUserId || ''}
                 onChange={(e) =>
                   editTask && setEditTask({ ...editTask, assignedUserId: e.target.value })
                 }
                 className="input"
               >
-                <option value="" disabled={!!editTask?.assignedUserId}>Select User</option>
-                    {users.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.firstName} {user.lastName} ({user.role})
-                      </option>
-                    ))}
+                <option value="">Select User</option>
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.firstName} {user.lastName} ({user.role})
+                  </option>
+                ))}
               </select>
-
               <select
                 value={editTask?.status || task.status}
                 onChange={(e) =>
@@ -185,7 +198,6 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId, onBack }) => {
                 <option value="doing">Doing</option>
                 <option value="done">Done</option>
               </select>
-
               <div>
                 <button
                   onClick={handleUpdateTask}
@@ -216,32 +228,35 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId, onBack }) => {
               <p className="task-detail">
                 Assigned User: {assignedUser ? `${assignedUser.firstName} ${assignedUser.lastName}` : 'None'}
               </p>
-
               <button
                 onClick={handleEditTask}
                 className="button button-edit"
               >
                 Edit
               </button>
-
               {task.status === 'todo' && (
                 <div>
                   <h3 className="form-title">Assign User</h3>
-                  <select
-                    onChange={(e) => handleAssignUser(e.target.value)}
-                    value={task.assignedUserId || ''}
-                    className="input"
-                  >
-                    <option value="">Select User</option>
-                    {users.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.firstName} {user.lastName} ({user.role})
-                      </option>
-                    ))}
-                  </select>
+                  {isLoadingUsers ? (
+                    <p>Loading users...</p>
+                  ) : users.length === 0 ? (
+                    <p>No users available</p>
+                  ) : (
+                    <select
+                      onChange={(e) => handleAssignUser(e.target.value)}
+                      value={task.assignedUserId || ''}
+                      className="input"
+                    >
+                      <option value="">Select User</option>
+                      {users.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {user.firstName} {user.lastName} ({user.role})
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               )}
-
               {task.status === 'doing' && (
                 <button
                   onClick={handleMarkAsDone}

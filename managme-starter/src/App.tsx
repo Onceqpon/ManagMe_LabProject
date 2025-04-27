@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { ProjectStorage } from './services/localStorage';
 import { ActiveProject } from './services/ActiveItem';
-import { UserSession } from './services/UserSession';
 import { Project, Story, Task, User } from './types/types';
 import TaskDetails from './components/TaskDetails';
-import './styles/app.css';
+import Login from './components/Login';
 import Navbar from './components/Navbar';
-import CheckIcon from '@mui/icons-material/Check';
+import './styles/app.css';
 
 const App: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -30,9 +30,18 @@ const App: React.FC = () => {
   });
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [users] = useState<User[]>(UserSession.getAllUsers());
+  const [users, setUsers] = useState<User[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    // Pobieranie danych użytkownika i projektów
+    fetchUsers();
     setProjects(ProjectStorage.getAllProjects());
     const activeId = ActiveProject.getActive();
     setActiveProjectId(activeId);
@@ -40,7 +49,29 @@ const App: React.FC = () => {
       setStories(ProjectStorage.getAllStories(activeId));
       setTasks(ProjectStorage.getAllTasks());
     }
-  }, []);
+  }, [navigate]);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/user', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      const user = await response.json();
+      if (response.ok) {
+        setUsers([user]); // Tymczasowo, zakładamy jednego użytkownika
+      } else {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        navigate('/login');
+      }
+    } catch {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      navigate('/login');
+    }
+  };
 
   const handleCreateProject = () => {
     if (newProject.name && newProject.description) {
@@ -91,7 +122,7 @@ const App: React.FC = () => {
         projectId: activeProjectId,
         createdAt: new Date().toISOString(),
         status: 'todo',
-        ownerId: UserSession.getLoggedUser().id,
+        ownerId: users[0]?.id || '1',
       };
       ProjectStorage.addStory(story);
       setStories(ProjectStorage.getAllStories(activeProjectId));
@@ -114,19 +145,6 @@ const App: React.FC = () => {
       setTasks(ProjectStorage.getAllTasks());
     }
   };
-  const handleChangeStatus = (id: string) => {
-    if (activeProjectId) {
-      const story = stories.find((s) => s.id === id);
-      if (story) {
-        const updatedStory: Story = {
-          ...story,
-          status: story.status === 'todo' ? 'doing' : story.status === 'doing' ? 'done' : 'todo',
-        };
-        ProjectStorage.updateStory(updatedStory);
-        setStories(ProjectStorage.getAllStories(activeProjectId));
-      }
-    }
-  }
 
   const handleCreateTask = () => {
     if (activeProjectId && newTask.name && newTask.description && newTask.storyId) {
@@ -169,16 +187,7 @@ const App: React.FC = () => {
     return tasks.filter((task) => task.status === status && stories.some((s) => s.id === task.storyId));
   };
 
-  if (selectedTaskId) {
-    return (
-      <TaskDetails
-        taskId={selectedTaskId}
-        onBack={() => setSelectedTaskId(null)}
-      />
-    );
-  }
-
-  return (
+  const MainApp = () => (
     <div>
       <Navbar />
       <div className="container">
@@ -186,7 +195,7 @@ const App: React.FC = () => {
 
         {/* Create/Update Project */}
         <div className="form-section">
-          <h2 className="form-title2">{editingProject ? 'Edit Project' : 'Add Project'}</h2>
+          <h2 className="form-title">{editingProject ? 'Edit Project' : 'Add Project'}</h2>
           <input
             type="text"
             placeholder="Project Name"
@@ -269,7 +278,7 @@ const App: React.FC = () => {
         {activeProjectId && (
           <>
             <div className="form-section">
-              <h2 className="form-title2">{editingStory ? 'Edit Story' : 'Add Story'}</h2>
+              <h2 className="form-title">{editingStory ? 'Edit Story' : 'Add Story'}</h2>
               <input
                 type="text"
                 placeholder="Story Name"
@@ -364,10 +373,6 @@ const App: React.FC = () => {
                           Edit
                         </button>
                         <button
-                          className="button button-primary"
-                          onClick={() => handleChangeStatus(story.id)}
-                          ><CheckIcon /></button>
-                        <button
                           onClick={() => handleDeleteStory(story.id)}
                           className="button button-delete"
                         >
@@ -396,12 +401,6 @@ const App: React.FC = () => {
                         >
                           Edit
                         </button>
-
-                        <button
-                          className="button button-primary"
-                          onClick={() => handleChangeStatus(story.id)}
-                          ><CheckIcon /></button>
-
                         <button
                           onClick={() => handleDeleteStory(story.id)}
                           className="button button-delete"
@@ -431,7 +430,6 @@ const App: React.FC = () => {
                         >
                           Edit
                         </button>
-
                         <button
                           onClick={() => handleDeleteStory(story.id)}
                           className="button button-delete"
@@ -446,9 +444,8 @@ const App: React.FC = () => {
             </div>
 
             {/* Tasks Section */}
-            <h2 className="form-title">Tasks</h2>
             <div className="form-section">
-              <h2 className="form-title2" >{editingTask ? 'Edit Task' : 'Add Task'}</h2>
+              <h2 className="form-title">{editingTask ? 'Edit Task' : 'Add Task'}</h2>
               <input
                 type="text"
                 placeholder="Task Name"
@@ -554,19 +551,19 @@ const App: React.FC = () => {
                         <div>
                           <button
                             onClick={() => setSelectedTaskId(task.id)}
-                            className="button-task button-details"
+                            className="button button-details"
                           >
                             Details
                           </button>
                           <button
                             onClick={() => setEditingTask(task)}
-                            className="button-task button-edit"
+                            className="button button-edit"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDeleteTask(task.id)}
-                            className="button-task button-delete"
+                            className="button button-delete"
                           >
                             Delete
                           </button>
@@ -589,19 +586,19 @@ const App: React.FC = () => {
                         <div>
                           <button
                             onClick={() => setSelectedTaskId(task.id)}
-                            className="button-task button-details"
+                            className="button button-details"
                           >
                             Details
                           </button>
                           <button
                             onClick={() => setEditingTask(task)}
-                            className="button-task button-edit"
+                            className="button button-edit"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDeleteTask(task.id)}
-                            className="button-task button-delete"
+                            className="button button-delete"
                           >
                             Delete
                           </button>
@@ -624,19 +621,19 @@ const App: React.FC = () => {
                         <div>
                           <button
                             onClick={() => setSelectedTaskId(task.id)}
-                            className="button-task button-details"
+                            className="button button-details"
                           >
                             Details
                           </button>
                           <button
                             onClick={() => setEditingTask(task)}
-                            className="button-task button-edit"
+                            className="button button-edit"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDeleteTask(task.id)}
-                            className="button-task button-delete"
+                            className="button button-delete"
                           >
                             Delete
                           </button>
@@ -651,6 +648,35 @@ const App: React.FC = () => {
         )}
       </div>
     </div>
+  );
+
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route
+        path="/"
+        element={
+          localStorage.getItem('token') ? (
+            <MainApp />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+      <Route
+        path="/task/:taskId"
+        element={
+          localStorage.getItem('token') ? (
+            <TaskDetails
+              taskId={selectedTaskId || ''}
+              onBack={() => navigate('/')}
+            />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+    </Routes>
   );
 };
 
