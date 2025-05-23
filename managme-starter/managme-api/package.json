@@ -1,18 +1,19 @@
 {
     "name": "managme-api",
     "version": "1.0.0",
-    "main": "index.ts",
+    "main": "authApi.ts",
     "type": "commonjs",
     "scripts": {
-        "start": "ts-node index.ts",
+        "start": "ts-node authApi.ts",
         "build": "tsc",
-        "start:prod": "node dist/index.js"
+        "start:prod": "node dist/authApi.js"
     },
     "dependencies": {
         "cors": "^2.8.5",
         "dotenv": "^16.5.0",
         "express": "^4.21.2",
-        "jsonwebtoken": "^9.0.2"
+        "jsonwebtoken": "^9.0.2",
+        "localstorage": "^1.0.1"
     },
     "devDependencies": {
         "@types/cors": "^2.8.17",

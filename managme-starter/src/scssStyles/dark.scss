@@ -1,0 +1,39 @@
+@import "../../node_modules/bootstrap/scss/functions";
+@import "../../node_modules/bootstrap/scss/variables";
+@import "variables";
+
+body {
+  background-color: $dark-bg;
+  color: $dark-text;
+}
+
+.theme-container {
+  position: absolute;
+  right: 30px;
+  top: 30px;
+}
+
+.login-container {
+  max-width: 500px;
+  margin: 5rem auto;
+  padding: 2rem;
+  background-color: $dark-container-bg;
+  border-radius: $border-radius;
+  box-shadow: 0 0.5rem 1rem rgba($dark-text, 0.15);
+
+  h2 {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .input-group {
+    margin-bottom: 1rem;
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: $border-radius;
+    font-weight: $font-weight-bold;
+  }
+}
