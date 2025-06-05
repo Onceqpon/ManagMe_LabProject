@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Logowanie</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css"
+    />
+    <link id="themeStylesheet" rel="stylesheet" href="" />
+    <script type="module" src="./src/utils/themeToglerLogin.ts"></script>
+  </head>
+  <body>
+    <div class="theme-container">
+      <button id="toggleThemeBtn" class="btn btn-primary">
+        <i id="themeIcon" class="bi bi-sun"></i>
+      </button>
+    </div>
+    <div class="login-container">
+      <h2>Project Manager - sign in</h2>
+      <form id="login-form">
+        <div class="input-group flex-nowrap">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Username"
+            aria-label="Username"
+            aria-describedby="addon-wrapping"
+            id="login"
+            name="login"
+            required
+          />
+        </div>
+        <div class="input-group flex-nowrap">
+          <input
+            type="password"
+            class="form-control"
+            placeholder="Password"
+            aria-label="Password"
+            aria-describedby="addon-wrapping"
+            id="password"
+            name="password"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+      </form>
+    </div>
+
+    <script type="module" src="./src/views/login.ts"></script>
+  </body>
+</html>

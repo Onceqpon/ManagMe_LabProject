@@ -1,0 +1,21 @@
+// variables.scss
+
+// Kolory dla motywu jasnego
+$light-bg: #f5f5f5;
+$light-text: #000;
+$light-container-bg: #fff;
+$light-button-bg: #4caf50;
+$light-button-hover-bg: #45a049;
+$light-border-color: #ddd;
+$light-border-radius: 5px;
+$font-weight-bold: bold;
+
+// Kolory dla motywu ciemnego
+$dark-bg: #121212;
+$dark-text: #fff;
+$dark-container-bg: #2c2c2c;
+$dark-button-bg: #333;
+$dark-button-hover-bg: #555;
+$dark-border-color: #444;
+$dark-border-radius: 5px;
+$dark-shadow: rgba($dark-text, 0.15);
