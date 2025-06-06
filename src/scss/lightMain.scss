@@ -1,240 +1,387 @@
-@import "variablesMain"; // Importowanie zmiennych z pliku variablesMain.scss
+@import 'variablesMain.scss';  // Załaduj zmienne z pliku
 
 body {
-  background-color: $light-bg;
-  color: $light-text;
+  background-color: $light-bg;  // Jasne tło
+  color: $light-text;  // Jasny tekst
   font-family: Arial, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  min-height: 100vh;
-  margin: 0;
 }
 
 #add-project-form {
   margin: 20px;
-  width: 60%;
-  max-width: 600px;
 }
 
-input[type="text"],
-input[type="number"],
+.menu-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: left;
+  flex-direction: row;
+  width: 100%;
+  padding: 10px;
+}
+
+#add-project-form input[type="text"],
+.modal input[type="text"],
+.modal input[type="number"],
 select {
   margin-bottom: 10px;
   padding: 10px;
   font-size: 16px;
   border-radius: $light-border-radius;
-  border: 1px solid #ddd;
-  width: 100%;
-  box-sizing: border-box;
-  background-color: white;
+  border: 1px solid $light-border-color;
+  background-color: $light-container-bg;
+  color: $light-text;
 }
 
-button {
+#add-project-form button {
   padding: 10px 20px;
   font-size: 16px;
-  color: white;
+  color: $light-text;
   border: none;
   border-radius: $light-border-radius;
   cursor: pointer;
-  transition: all 0.3s ease;
+  background-color: $light-button-bg;
 }
 
 #add-button {
   background-color: $light-button-bg;
+}
 
-  &:hover {
-    background-color: $light-button-hover-bg;
-  }
+#add-button:hover {
+  background-color: $light-button-hover-bg;
 }
 
 #add-story {
   background-color: #008cba;
+}
 
-  &:hover {
-    background-color: #007b9a;
-  }
+#add-story:hover {
+  background-color: #007b9a;
 }
 
 #project-list {
   list-style-type: none;
   padding: 0;
   width: 60%;
-  margin: 20px auto;
-  max-width: 800px;
+  margin: 0 auto;
 }
 
 #project-list li {
-  padding: 15px;
+  display: flex;
+  padding: 10px;
   margin-bottom: 10px;
   background-color: $light-container-bg;
   border: 2px solid $light-border-color;
   border-radius: $light-border-radius;
   text-align: center;
   word-wrap: break-word;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: row;
+  color: $light-text;
   justify-content: space-between;
   align-items: center;
+  flex-direction: row;
+}
 
-  &:hover {
-    background-color: #f0f0f0;
-  }
-
-  &.active-project {
-    background-color: #e0e0e0;
-    font-weight: bold;
-    border-color: #00b7d4;
-    box-shadow: 0 0 10px rgba(0, 183, 212, 0.3);
-  }
+#project-list button {
+  margin: 5px;
+  padding: 5px 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 #project-list .select-button {
-  padding: 8px 15px;
-  font-size: 14px;
-  border-radius: $light-border-radius;
-  background-color: #008cba;
+  background-color: rgb(63, 63, 182);
+  color: white;
 }
 
 #project-list .edit-button {
-  padding: 8px 15px;
-  font-size: 14px;
-  border-radius: $light-border-radius;
-  background-color: $light-button-bg;
+  background-color: green;
+  color: white;
 }
 
 #project-list .delete-button {
-  padding: 8px 15px;
-  font-size: 14px;
-  border-radius: $light-border-radius;
-  background-color: #f44336;
+  background-color: rgb(114, 12, 12);
+  color: white;
 }
 
 #project-list button:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  background-color: $light-border-color;
 }
 
-.button-group {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
+#project-list li.active-project {
+  border-color: seagreen;
 }
 
 .modal {
-  display: none;
   position: fixed;
-  inset: 0;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
   background-color: rgba(0, 0, 0, 0.4);
-  z-index: 1000;
-  overflow-y: auto;
+  display: block;
 }
 
 .modal-content {
-  background-color: white;
-  margin: 10% auto;
-  padding: 25px;
+  background-color: $light-container-bg;
+  margin: 15% auto;
+  padding: 20px;
   border: 2px solid $light-border-color;
   border-radius: $light-border-radius;
-  width: 90%;
-  max-width: 400px;
+  width: 40%;
+  display: block;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+}
+
+#edit-project-form {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  color: $light-text;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  justify-content: space-between;
+  width: 100%;
+  
+  label, input {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  label {
+    margin-right: 10px;
+  }
+
+  input {
+    margin-top: 5px;
+  }
+}
+
+#edit-task-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  
+  label, input {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  label {
+    margin-right: 10px;
+  }
+
+  input {
+    margin-top: 5px;
+  }
 }
 
 .task-modal-content {
-  @extend .modal-content;
-  width: 90%;
-  max-width: 800px;
-  margin: 5% auto;
-  color: $light-text;
+  background-color: $light-container-bg;
+  margin: 15% auto;
+  padding: 20px;
+  border: 2px solid $light-border-color;
+  border-radius: $light-border-radius;
+  width: 80%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
 }
 
-.modal-buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-  justify-content: center;
+.modal-button {
+  margin: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: rgb(63, 63, 182);
+  color: $light-text;
+  border: none;
+  border-radius: $light-border-radius;
+  cursor: pointer;
+  display: inline-block;
+  width: 130px;
+}
+
+.modal-button:hover {
+  background-color: $light-button-hover-bg;
+}
+
+.modal-button:active {
+  background-color: $light-button-bg;
+}
+
+.modal-button.cancel:active {
+  background-color: #9a0007;
 }
 
 #error-message {
-  color: #f44336;
+  color: red;
   font-weight: bold;
-  margin: 10px 0;
+  margin-top: 10px;
   text-align: center;
+  margin-bottom: 20px;
 }
 
 #kanban-board {
   display: none;
-  width: 95%;
-  max-width: 1200px;
+  width: 90%;
   justify-content: space-between;
-  margin: 20px 0;
-  gap: 15px;
-  color: $light-text;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .column {
   flex: 1;
-  background-color: white;
+  background-color: $light-container-bg;
   border-radius: $light-border-radius;
   border: 4px solid $light-border-color;
-  padding: 15px;
-  min-height: 300px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  
-  &.Doing {
-    border-color: #008cba;
-  }
-  
-  &.Done {
-    border-color: $light-button-bg;
-  }
+  margin: 5px;
+  padding: 10px;
+}
+
+.column h2 {
+  margin-top: 0;
+  text-align: center;
 }
 
 .story-card {
   background-color: $light-container-bg;
   border: 1px solid $light-border-color;
   border-radius: $light-border-radius;
-  padding: 15px;
-  margin-bottom: 15px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  }
+  padding: 10px;
+  width: 70%;
+  margin: auto;
+  margin-bottom: 10px;
+}
+
+.story-description {
+  padding: 10px 0;
+}
+
+.story-card h2 {
+  margin-top: 0;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.story-card p {
+  margin: 0;
+  color: $light-text;
+}
+
+.edit-story-button {
+  display: inline-block;
+  margin: 10px 10px 0 0;
+  background-color: rgb(78, 78, 221);
+  color: white;
+  border: none;
+  border-radius: $light-border-radius;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 16px;
+  padding: 5px 10px;
+}
+
+.edit-story-button:hover {
+  background-color: $light-button-hover-bg;
+}
+
+.delete-story-button {
+  display: inline-block;
+  margin: 10px 10px 0 0;
+  background-color: rgb(209, 88, 88);
+  color: white;
+  border: none;
+  border-radius: $light-border-radius;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 16px;
+  padding: 5px 10px;
+}
+
+.show-tasks-button {
+  display: inline-block;
+  margin: 10px 10px 0 0;
+  background-color: rgb(122, 177, 109);
+  color: white;
+  border: none;
+  border-radius: $light-border-radius;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 16px;
+  padding: 5px 10px;
+}
+
+.delete-story-button:hover {
+  background-color: $light-button-hover-bg;
+}
+
+.Doing {
+  border-color: #008cba;
+  border-width: 3px;
+}
+
+.Done {
+  border-color: #4caf50;
+  border-width: 3px;
+}
+
+#Todo-stories,
+#Doing-stories,
+#Done-stories {
+  position: relative;
+  min-height: 70%;
+  z-index: 0;
+  padding: 10px;
+  margin: 10px;
 }
 
 .drag-over {
-  border: 2px dashed #f44336;
-  background-color: rgba(240, 240, 240, 0.5);
+  border: 2px dashed red;
+  background-color: #e0e0e0;
+  opacity: 0.5;
+  border-radius: 5px;
 }
 
-table {
+.task-modal-content table {
   width: 100%;
   border-collapse: collapse;
-  margin: 20px 0;
-  
-  th, td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid $light-border-color;
-  }
-  
-  th {
-    background-color: #f5f5f5;
-    color: #333;
-  }
-  
-  tr:hover {
-    background-color: #f9f9f9;
-  }
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.task-modal-content th,
+.task-modal-content td {
+  text-align: center;
+  vertical-align: middle;
+  padding: 8px;
+  border-bottom: 1px solid $light-border-color;
+}
+
+.task-modal-content th {
+  background-color: $light-container-bg;
+  color: $light-text;
+}
+
+.modal-button.active {
+  background-color: $light-button-bg;
+  color: white;
+}
+
+.modal-button.cancel {
+  background-color: $light-button-bg;
+  color: white;
+}
+
+.modal-button:hover {
+  opacity: 0.8;
 }

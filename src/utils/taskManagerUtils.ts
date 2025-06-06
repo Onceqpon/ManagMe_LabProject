@@ -16,17 +16,8 @@ export function editTask(task: Task): void {
 }
 
 export function deleteTask(taskId: string, storyId: string): void {
-  // 1. Delete the task using API
   projectAPI.deleteTask(taskId);
-
-  // 2. Remove the existing modal (task list modal)
-  const existingModal = document.querySelector('.modal');
-  if (existingModal) {
-    existingModal.remove();
-  }
-
-  // 3. Call the function to show the updated task list
-  showModalWithTasksForStory(storyId); // This should show the updated task list after deletion
+  showModalWithTasksForStory(storyId);
 }
 
 export function createTask(storyId: string): void {

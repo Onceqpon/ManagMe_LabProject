@@ -46,9 +46,5 @@ export function createEditProjectModal(project: Project): HTMLDivElement {
   modalContent.append(form, saveButton, goBackButton);
   modal.appendChild(modalContent);
 
-  // Pokazywanie modala
-  document.body.appendChild(modal);
-  modal.style.display = "block";
-
   return modal;
 }

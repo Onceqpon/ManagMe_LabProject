@@ -22,9 +22,11 @@ export function displayProjects(): void {
   projectList.innerHTML = "";
   projects.forEach((project) => {
     const listItem = document.createElement("li");
+    const buttonContainer = document.createElement("div");
     listItem.id = project.id;
     listItem.innerHTML = `<strong>${project.name}</strong><br>${project.description}<br>`;
     listItem.classList.toggle("active-project", project.active);
+
     if (project.active) {
       displayStoriesForCurrentProject(project.id);
     }
@@ -37,7 +39,9 @@ export function displayProjects(): void {
     const deleteButton = createButton("Delete", "delete-button", () =>
       deleteProject(project.id)
     );
-    listItem.append(selectButton, editButton, deleteButton);
+    buttonContainer.className = "button-container";
+    buttonContainer.append(selectButton, editButton, deleteButton);
+    listItem.append(buttonContainer);
     projectList.appendChild(listItem);
   });
 }

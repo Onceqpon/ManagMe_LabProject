@@ -1,5 +1,5 @@
 import { Task, TaskPriority, TaskStatus } from "../models/taskModel";
-import ProjectAPI from "../managmeAPI/api"; // Fixed typo here
+import ProjectAPI from "../managmeAPI/api";
 import {
   createButton,
   createLabeledInputElement,
@@ -12,10 +12,10 @@ import { selectedProjectId } from "./projectManagerUtils";
 
 const projectAPI = new ProjectAPI();
 
-/**
- * Funkcja wyświetlająca modal do edycji zadania
- */
 export function createEditTaskModal(task: Task): HTMLDivElement {
+  console.log(task);
+  console.log(task.id);
+
   const modal = document.createElement("div");
   modal.className = "modal";
 
@@ -135,14 +135,9 @@ export function createEditTaskModal(task: Task): HTMLDivElement {
   modalContent.append(form, saveButton, goBackButton);
   modal.appendChild(modalContent);
 
-  modal.style.display = "block";
-
   return modal;
 }
 
-/**
- * Funkcja tworząca modal do dodawania nowego zadania
- */
 export function createTaskModal(storyId: string): HTMLDivElement {
   const modal = document.createElement("div");
   modal.className = "modal";
@@ -212,14 +207,9 @@ export function createTaskModal(storyId: string): HTMLDivElement {
   modalContent.append(form, addTaskButton, goBackButton);
   modal.appendChild(modalContent);
 
-  modal.style.display = "block";
-
   return modal;
 }
 
-/**
- * Funkcja pokazująca zadania powiązane z historią
- */
 export function showModalWithTasksForStory(storyId: string): HTMLDivElement {
   const modal = document.createElement("div");
   modal.className = "modal";
@@ -227,21 +217,18 @@ export function showModalWithTasksForStory(storyId: string): HTMLDivElement {
   modalContent.id = "task-modal-content";
   modalContent.className = "task-modal-content";
 
-  // Fetch the updated tasks for this story
-  const tasks = projectAPI.getTasksByStoryId(storyId); // Make sure this is up to date
+  const tasks = projectAPI.getTasksByStoryId(storyId);
 
   if (!tasks || tasks.length === 0) {
     const noTasksMessage = document.createElement("p");
     noTasksMessage.textContent = "No tasks for this story";
     modalContent.appendChild(noTasksMessage);
   } else {
-    // Remove any existing task table if it exists
     const existingTable = document.getElementById("task-table");
     if (existingTable) {
-      existingTable.remove(); // Remove the old task table
+      existingTable.remove();
     }
 
-    // Create a new table
     const table = document.createElement("table");
     table.id = "task-table";
 
@@ -330,7 +317,8 @@ export function showModalWithTasksForStory(storyId: string): HTMLDivElement {
       );
       actionsCell.appendChild(
         createButton("Delete", "modal-button cancel", () => {
-          deleteTask(task.id, storyId); // Refresh list after delete
+          deleteTask(task.id, storyId);
+          modal.remove();
         })
       );
     });
@@ -338,7 +326,6 @@ export function showModalWithTasksForStory(storyId: string): HTMLDivElement {
     modalContent.appendChild(table);
   }
 
-  // Add the "Create Task" button
   const createTaskButton = createButton(
     "Create Task",
     "modal-button active",
@@ -350,7 +337,6 @@ export function showModalWithTasksForStory(storyId: string): HTMLDivElement {
   );
   modalContent.appendChild(createTaskButton);
 
-  // Add "Go Back" button
   const goBackButton = createButton("Go Back", "modal-button cancel", () => {
     modal.remove();
     displayStoriesForCurrentProject(selectedProjectId!);
@@ -359,7 +345,6 @@ export function showModalWithTasksForStory(storyId: string): HTMLDivElement {
 
   modal.appendChild(modalContent);
   document.body.appendChild(modal);
-  modal.style.display = "block";
 
   return modal;
 }

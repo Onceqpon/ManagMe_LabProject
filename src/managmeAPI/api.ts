@@ -22,21 +22,24 @@ class ProjectAPI {
     }
   }
 
- deleteTask(taskId: string) {
-    // Filtrujemy zadania, usuwamy te, które mają taskId
+  deleteTask(taskId: string) {
+    // Usuwamy zadanie
     const tasks: Task[] = this.getAllTasks().filter((task) => task.id !== taskId);
-    localStorage.setItem("tasks", JSON.stringify(tasks)); // Zapisujemy zaktualizowaną listę zadań
+    localStorage.setItem("tasks", JSON.stringify(tasks));
 
     // Zaktualizowanie stories
     const stories: Story[] = this.getAllStories();
     const updatedStories = stories.map((story) => {
-      const updatedTaskIds = story.tasks.filter((id) => id !== taskId);
-      return { ...story, tasks: updatedTaskIds };
+      if (Array.isArray(story.tasks)) {
+        const updatedTaskIds = story.tasks.filter((id) => id !== taskId);
+        return { ...story, tasks: updatedTaskIds };
+      }
+      return story;
     });
-    localStorage.setItem("stories", JSON.stringify(updatedStories)); // Zapisujemy zaktualizowaną listę story
+    localStorage.setItem("stories", JSON.stringify(updatedStories));
+  }
 
-}
-  getTaskById(id: string) {
+  getTaskById(id: string): Task | null {
     const tasks: Task[] = this.getAllTasks();
     return tasks.find((task) => task.id === id) || null;
   }
@@ -97,6 +100,10 @@ class ProjectAPI {
       (project) => project.id === projectId
     );
     if (project) {
+      // Zapewniamy, że tasks jest tablicą
+      if (!Array.isArray(story.tasks)) {
+        story.tasks = [];
+      }
       project.stories.push(story.id);
       this.updateProject(project);
     }
@@ -111,6 +118,10 @@ class ProjectAPI {
       (story) => story.id === storyId
     );
     if (story) {
+      // Zapewniamy, że tasks jest tablicą
+      if (!Array.isArray(story.tasks)) {
+        story.tasks = [];
+      }
       story.tasks.push(task.id);
       this.updateStory(story);
     }
@@ -143,7 +154,11 @@ class ProjectAPI {
 
   getStoryById(id: string): Story | null {
     const stories: Story[] = this.getAllStories();
-    return stories.find((story) => story.id === id) || null;
+    const story = stories.find((story) => story.id === id);
+    if (story && !Array.isArray(story.tasks)) {
+      story.tasks = []; // Inicjalizujemy tasks, jeśli nie istnieje
+    }
+    return story || null;
   }
 }
 

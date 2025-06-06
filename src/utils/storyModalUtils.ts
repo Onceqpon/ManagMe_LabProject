@@ -12,12 +12,11 @@ const projectAPI = new ProjectAPI();
 
 export function createAddStoryModal(currentProjectId: string): HTMLDivElement {
   const modal = document.createElement("div");
-  modal.className = "modal"; // Klasa dla stylów
-
+  modal.className = "modal";
   const modalContent = document.createElement("div");
   modalContent.className = "modal-content";
   const form = document.createElement("form");
-  form.id = "add-story-form";
+  form.id = "edit-project-form";
 
   const name = createLabeledInputElement("text", "story-name", "", "Name: ");
   const description = createLabeledInputElement(
@@ -43,8 +42,10 @@ export function createAddStoryModal(currentProjectId: string): HTMLDivElement {
   const addStory = createButton("Add", "modal-button", () => {
     const nameValue = name.querySelector("input")?.value;
     const descriptionValue = description.querySelector("input")?.value;
-    const priorityValue = (priority.querySelector("select") as HTMLSelectElement)
-      ?.value as "Low" | "Medium" | "High";
+    const priorityValue = document.querySelector("option")?.value as
+      | "Low"
+      | "Medium"
+      | "High";
     if (nameValue && descriptionValue && priorityValue && project && owner) {
       const storyId = Date.now().toString();
       const newStory = new Story(
@@ -69,19 +70,12 @@ export function createAddStoryModal(currentProjectId: string): HTMLDivElement {
   modalContent.append(form, addStory, goBackButton);
   modal.appendChild(modalContent);
 
-  // Dodaj modal do DOM-u
-  document.body.appendChild(modal);
-  
-  // Ustaw styl na widoczny
-  modal.style.display = "block";
-
   return modal;
 }
 
 export function createEditStoryModal(story: Story): HTMLDivElement {
   const modal = document.createElement("div");
-  modal.className = "modal"; // Klasa dla stylów
-
+  modal.className = "modal";
   const modalContent = document.createElement("div");
   modalContent.className = "modal-content";
   const form = document.createElement("form");
@@ -101,7 +95,7 @@ export function createEditStoryModal(story: Story): HTMLDivElement {
   );
   const priority = createLabeledOptionElement(
     "story-priority",
-    ["Low", "Medium", "High"],
+    ["Low", "Mdium", "High"],
     "Priority: ",
     story.priority
   );
@@ -115,10 +109,14 @@ export function createEditStoryModal(story: Story): HTMLDivElement {
   const saveButton = createButton("Save", "modal-button", () => {
     const nameValue = name.querySelector("input")?.value;
     const descriptionValue = description.querySelector("input")?.value;
-    const priorityValue = (priority.querySelector("select") as HTMLSelectElement)
-      ?.value as "Low" | "Medium" | "High";
-    const statusValue = (status.querySelector("select") as HTMLSelectElement)
-      ?.value as "Todo" | "Doing" | "Done";
+    const priorityValue = priority.querySelector("select")?.value as
+      | "Low"
+      | "Medium"
+      | "High";
+    const statusValue = status.querySelector("select")?.value as
+      | "Todo"
+      | "Doing"
+      | "Done";
 
     if (nameValue && descriptionValue && priorityValue && statusValue) {
       story.name = nameValue;
@@ -139,12 +137,6 @@ export function createEditStoryModal(story: Story): HTMLDivElement {
   form.append(name, description, priority, status);
   modalContent.append(form, saveButton, goBackButton);
   modal.appendChild(modalContent);
-
-  // Dodaj modal do DOM-u
-  document.body.appendChild(modal);
-  
-  // Ustaw styl na widoczny
-  modal.style.display = "block";
 
   return modal;
 }
