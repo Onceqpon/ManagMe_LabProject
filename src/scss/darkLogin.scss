@@ -1,39 +1,115 @@
 @import "../../node_modules/bootstrap/scss/functions";
 @import "../../node_modules/bootstrap/scss/variables";
-@import "variablesLogin";
+@import "variablesMain";
 
 body {
   background-color: $dark-bg;
   color: $dark-text;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
 }
 
 .theme-container {
   position: absolute;
   right: 30px;
   top: 30px;
+  
+  #toggleThemeBtn {
+    background-color: $dark-button-bg;
+    color: $dark-text;
+    border: 1px solid $dark-border-color;
+    border-radius: $dark-border-radius;
+    padding: 8px 12px;
+    
+    &:hover {
+      background-color: $dark-button-hover-bg;
+    }
+    
+    #themeIcon {
+      font-size: 1.2rem;
+    }
+  }
 }
 
 .login-container {
   max-width: 500px;
-  margin: 5rem auto;
+  width: 90%;
   padding: 2rem;
   background-color: $dark-container-bg;
-  border-radius: $border-radius;
+  border-radius: $dark-border-radius;
+  border: 2px solid $dark-border-color;
   box-shadow: 0 0.5rem 1rem rgba($dark-text, 0.15);
 
   h2 {
     margin-bottom: 2rem;
     text-align: center;
+    color: $dark-text;
   }
+}
+
+#login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 
   .input-group {
-    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: $dark-border-radius;
+      border: 1px solid $dark-border-color;
+      background-color: darken($dark-container-bg, 5%);
+      color: $dark-text;
+      transition: border-color 0.3s ease;
+
+      &:focus {
+        outline: none;
+        border-color: lighten($dark-border-color, 15%);
+        box-shadow: 0 0 0 2px rgba($dark-button-bg, 0.25);
+      }
+
+      &::placeholder {
+        color: lighten($dark-container-bg, 30%);
+      }
+    }
   }
 
   .btn-primary {
     width: 100%;
-    padding: 0.75rem;
-    border-radius: $border-radius;
-    font-weight: $font-weight-bold;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: $dark-border-radius;
+    font-weight: bold;
+    background-color: $dark-button-bg;
+    color: $dark-text;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+
+    &:hover {
+      background-color: $dark-button-hover-bg;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
   }
+}
+
+.error-message {
+  color: #ff4444;
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 14px;
 }

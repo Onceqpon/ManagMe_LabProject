@@ -1,43 +1,54 @@
-function toggleThemeIcon(themeIcon: HTMLElement, theme: string) {
+function toggleThemeIcon(themeIcon: HTMLElement | null, theme: string): void {
+  if (!themeIcon) return;
+
   if (theme === "dark") {
-    themeIcon?.classList.add("bi-sun");
-    themeIcon?.classList.remove("bi-moon");
-    if (themeIcon !== null) {
-      themeIcon.textContent = "Light";
-    }
+    themeIcon.classList.replace("bi-moon", "bi-sun");
+    themeIcon.textContent = " Light";
   } else {
-    themeIcon?.classList.add("bi-moon");
-    themeIcon?.classList.remove("bi-sun");
-    if (themeIcon !== null) {
-      themeIcon.textContent = "Dark";
-    }
+    themeIcon.classList.replace("bi-sun", "bi-moon");
+    themeIcon.textContent = " Dark";
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  const themeStylesheet = document.getElementById("themeStylesheet");
+function setThemeStylesheet(theme: string): void {
+  const themeStylesheet = document.getElementById("themeStylesheet") as HTMLLinkElement | null;
+  if (!themeStylesheet) {
+    console.error("Theme stylesheet element not found");
+    return;
+  }
+
+  try {
+    themeStylesheet.href = `./src/scss/${theme}Login.scss`;
+  } catch (error) {
+    console.error("Error loading theme stylesheet:", error);
+  }
+}
+
+function getCurrentTheme(): string {
+  return localStorage.getItem("theme") || "light";
+}
+
+function toggleTheme(): void {
+  const currentTheme = getCurrentTheme();
+  const newTheme = currentTheme === "light" ? "dark" : "light";
+  
+  setThemeStylesheet(newTheme);
+  localStorage.setItem("theme", newTheme);
+  
+  const themeIcon = document.getElementById("themeIcon");
+  toggleThemeIcon(themeIcon, newTheme);
+}
+
+function initializeTheme(): void {
+  const theme = getCurrentTheme();
+  
+  setThemeStylesheet(theme);
+  
+  const themeIcon = document.getElementById("themeIcon");
+  toggleThemeIcon(themeIcon, theme);
+  
   const toggleThemeBtn = document.getElementById("toggleThemeBtn");
-  const toggleIcon = document.getElementById("themeIcon");
+  toggleThemeBtn?.addEventListener("click", toggleTheme);
+}
 
-  const currentTheme = localStorage.getItem("theme") || "light";
-  themeStylesheet?.setAttribute("href", `./src/scss/${currentTheme}Login.scss`);
-
-  if (toggleIcon !== null) {
-    toggleThemeIcon(toggleIcon, currentTheme);
-  }
-
-  if (themeStylesheet !== null && toggleThemeBtn !== null) {
-    toggleThemeBtn.addEventListener("click", function () {
-      const theme = themeStylesheet?.getAttribute("href")?.includes("light")
-        ? "dark"
-        : "light";
-
-      themeStylesheet.setAttribute("href", `./src/scss/${theme}Login.scss`);
-      if (toggleIcon !== null) {
-        toggleThemeIcon(toggleIcon, theme);
-      }
-
-      localStorage.setItem("theme", theme);
-    });
-  }
-});
+document.addEventListener("DOMContentLoaded", initializeTheme);

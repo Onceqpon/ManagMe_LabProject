@@ -1,45 +1,69 @@
+import { jwtDecode } from "jwt-decode";
+
 interface LoginResponse {
   token: string;
   refreshToken: string;
   message?: string;
 }
 
+interface DecodedToken {
+  exp: number;
+}
+
 async function handleLogin(event: Event): Promise<void> {
   event.preventDefault();
 
-  const login = (document.getElementById("login") as HTMLInputElement).value;
-  const password = (document.getElementById("password") as HTMLInputElement)
-    .value;
+  const loginInput = document.getElementById("login") as HTMLInputElement | null;
+  const passwordInput = document.getElementById("password") as HTMLInputElement | null;
 
-  const response = await fetch("http://localhost:5000/api/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ login, password }),
-  });
+  if (!loginInput || !passwordInput) {
+    alert("Brakuje pól logowania.");
+    return;
+  }
 
-  const data: LoginResponse = await response.json();
+  const login = loginInput.value.trim();
+  const password = passwordInput.value;
 
-  const { token, refreshToken } = data;
+  try {
+    const response = await fetch("http://localhost:5000/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ login, password }),
+    });
 
-  if (response.ok) {
-    localStorage.setItem("token", token);
-    localStorage.setItem("refreshToken", refreshToken);
+    const data: LoginResponse = await response.json();
 
-    window.location.href = "/projectManager";
-  } else {
-    alert("Błąd logowania: " + data.message);
+    if (response.ok) {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("refreshToken", data.refreshToken);
+      window.location.href = "/projectManager";
+    } else {
+      alert("Błąd logowania: " + (data.message ?? "Nieznany błąd"));
+    }
+  } catch (error) {
+    console.error("Błąd połączenia:", error);
+    alert("Błąd sieci. Spróbuj ponownie później.");
   }
 }
 
-function checkForJwtOnLoad() {
+function isTokenValid(token: string): boolean {
+  try {
+    const decoded = jwtDecode<DecodedToken>(token);
+    const now = Date.now() / 1000;
+    return decoded.exp > now;
+  } catch {
+    return false;
+  }
+}
+
+function checkForJwtOnLoad(): void {
   const token = localStorage.getItem("token");
-  if (token) {
+  if (token && isTokenValid(token)) {
     window.location.href = "/projectManager";
   }
 }
 
-document.getElementById("login-form")?.addEventListener("submit", handleLogin);
-
-document.addEventListener("DOMContentLoaded", checkForJwtOnLoad);
+document.addEventListener("DOMContentLoaded", () => {
+  checkForJwtOnLoad();
+  document.getElementById("login-form")?.addEventListener("submit", handleLogin);
+});

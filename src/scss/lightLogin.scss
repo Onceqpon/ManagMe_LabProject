@@ -5,35 +5,111 @@
 body {
   background-color: $light-bg;
   color: $light-text;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
 }
 
 .theme-container {
   position: absolute;
   right: 30px;
   top: 30px;
+  
+  #toggleThemeBtn {
+    background-color: $light-container-bg;
+    color: $light-text;
+    border: 1px solid darken($light-container-bg, 15%);
+    border-radius: $border-radius;
+    padding: 8px 12px;
+    
+    &:hover {
+      background-color: darken($light-container-bg, 5%);
+    }
+    
+    #themeIcon {
+      font-size: 1.2rem;
+    }
+  }
 }
 
 .login-container {
   max-width: 500px;
-  margin: 5rem auto;
+  width: 90%;
   padding: 2rem;
   background-color: $light-container-bg;
   border-radius: $border-radius;
-  box-shadow: 0 0.5rem 1rem rgba($light-text, 0.15);
+  border: 2px solid darken($light-container-bg, 10%);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
 
   h2 {
     margin-bottom: 2rem;
     text-align: center;
+    color: $light-text;
   }
+}
+
+#login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 
   .input-group {
-    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: $border-radius;
+      border: 1px solid darken($light-container-bg, 15%);
+      background-color: $light-container-bg;
+      color: $light-text;
+      transition: border-color 0.3s ease;
+
+      &:focus {
+        outline: none;
+        border-color: darken($light-container-bg, 25%);
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+      }
+
+      &::placeholder {
+        color: darken($light-container-bg, 30%);
+      }
+    }
   }
 
   .btn-primary {
     width: 100%;
-    padding: 0.75rem;
+    padding: 12px;
+    font-size: 16px;
     border-radius: $border-radius;
     font-weight: $font-weight-bold;
+    background-color: darken($light-container-bg, 15%);
+    color: $light-text;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+
+    &:hover {
+      background-color: darken($light-container-bg, 20%);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
   }
+}
+
+.error-message {
+  color: #ff4444;
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 14px;
 }
