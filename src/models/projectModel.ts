@@ -1,22 +1,17 @@
-import { Story } from "./storyModel";
-
 class Project {
   id: string;
   name: string;
   description: string;
   active: boolean;
-  stories: string[] = [];
+  created_at?: Date;
+  owner_id?: string;
 
-  constructor(id: string, name: string, description: string) {
+  constructor(id: string, name: string, description: string, owner_id?: string) {
     this.id = id;
     this.name = name;
     this.description = description;
     this.active = false;
-  }
-
-  addStory(story: Story): void {
-    this.stories.push(story.id);
+    this.owner_id = owner_id;
   }
 }
-
 export default Project;

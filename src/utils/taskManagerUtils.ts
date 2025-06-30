@@ -8,20 +8,20 @@ import {
 
 const projectAPI = new ProjectAPI();
 
-export function editTask(task: Task): void {
-  const modal = createEditTaskModal(task);
+export async function editTask(task: Task): Promise<void> {
+  const modal = await createEditTaskModal(task);
   if (modal) {
     document.body.appendChild(modal);
   }
 }
 
-export function deleteTask(taskId: string, storyId: string): void {
-  projectAPI.deleteTask(taskId);
-  showModalWithTasksForStory(storyId);
+export async function deleteTask(taskId: string, storyId: string): Promise<void> {
+  await projectAPI.deleteTask(taskId);
+  await showModalWithTasksForStory(storyId);
 }
 
-export function createTask(storyId: string): void {
-  const modal = createTaskModal(storyId);
+export async function createTask(storyId: string): Promise<void> {
+  const modal = await createTaskModal(storyId);
   if (modal) {
     document.body.appendChild(modal);
   }

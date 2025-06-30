@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import UsersDB from "../db/users";
+import { User } from "../models/userModel";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,30 +21,33 @@ app.use(
   })
 );
 
-app.post("/api/login", (req: Request, res: Response) => {
+app.post("/api/login", async (req: Request, res: Response) => {
   const { login, password } = req.body;
 
   if (!login || !password) {
     return res.status(400).json({ message: "Brakuje loginu lub hasła." });
   }
 
-  const user = UsersDB.getAll().find(
-    (u) => u.name === login && u.password === password
-  );
+  try {
+    const user = await UsersDB.findByNameAndPassword(login, password);
 
-  if (!user) {
-    return res.status(401).json({ message: "Nieprawidłowy login lub hasło." });
+    if (!user) {
+      return res.status(401).json({ message: "Nieprawidłowy login lub hasło." });
+    }
+
+    const token = jwt.sign({ id: user.id }, SECRET_KEY, {
+      expiresIn: TOKEN_EXPIRATION,
+    });
+
+    const refreshToken = jwt.sign({ id: user.id }, REFRESH_SECRET_KEY, {
+      expiresIn: REFRESH_TOKEN_EXPIRATION,
+    });
+
+    res.status(200).json({ token, refreshToken });
+  } catch (err) {
+    console.error("Błąd logowania:", err);
+    res.status(500).json({ message: "Błąd serwera przy logowaniu." });
   }
-
-  const token = jwt.sign({ id: user.id }, SECRET_KEY, {
-    expiresIn: TOKEN_EXPIRATION,
-  });
-
-  const refreshToken = jwt.sign({ id: user.id }, REFRESH_SECRET_KEY, {
-    expiresIn: REFRESH_TOKEN_EXPIRATION,
-  });
-
-  res.status(200).json({ token, refreshToken });
 });
 
 app.post("/api/refresh-token", (req: Request, res: Response) => {
@@ -66,7 +70,6 @@ app.post("/api/refresh-token", (req: Request, res: Response) => {
 
     const isExpired = err instanceof jwt.TokenExpiredError;
 
-
     res.status(401).json({
       message: isExpired
         ? "Refresh token wygasł. Zaloguj się ponownie."
@@ -75,7 +78,7 @@ app.post("/api/refresh-token", (req: Request, res: Response) => {
   }
 });
 
-app.get("/api/userinfo", (req: Request, res: Response) => {
+app.get("/api/userinfo", async (req: Request, res: Response) => {
   const authHeader = req.headers.authorization;
   const token = authHeader?.split(" ")[1];
 
@@ -83,27 +86,27 @@ app.get("/api/userinfo", (req: Request, res: Response) => {
     return res.status(401).json({ message: "Brak tokenu autoryzacyjnego." });
   }
 
-  jwt.verify(token, SECRET_KEY, (err, decoded) => {
-    if (err) {
-      console.error("Błąd weryfikacji JWT:", err);
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY) as JwtPayload;
+    const userId = decoded.id;
 
-      const isExpired =
-        err instanceof jwt.TokenExpiredError || err?.name === "TokenExpiredError";
-
-      return res.status(401).json({
-        message: isExpired ? "Token wygasł." : "Nieautoryzowany.",
-      });
-    }
-
-    const userId = (decoded as JwtPayload).id;
-    const user = UsersDB.getAll().find((u) => u.id === userId);
+    const user = await UsersDB.getUserById(userId);
 
     if (!user) {
       return res.status(404).json({ message: "Użytkownik nie znaleziony." });
     }
 
     res.status(200).json({ message: "Authorized", user });
-  });
+  } catch (err) {
+    console.error("Błąd weryfikacji JWT:", err);
+
+    const isExpired =
+      err instanceof jwt.TokenExpiredError || (err as any)?.name === "TokenExpiredError";
+
+    return res.status(401).json({
+      message: isExpired ? "Token wygasł." : "Nieautoryzowany.",
+    });
+  }
 });
 
 app.listen(PORT, () => {

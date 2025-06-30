@@ -5,60 +5,57 @@ import { createStoryCard } from "../utils/domUtils";
 import { createAddStoryModal, createEditStoryModal } from "./storyModalUtils";
 import { showModalWithTasksForStory } from "./taskModalUtils";
 import { selectedProjectId } from "./projectManagerUtils";
+
 const projectAPI = new ProjectAPI();
 const kanban = document.getElementById("kanban-board")!;
 
-export function displayStoriesForCurrentProject(
-  currentProjectId: string
-): void {
-  const stories = projectAPI.getStoriesByProjectId(currentProjectId);
-  console.log(stories);
+export async function displayStoriesForCurrentProject(currentProjectId: string): Promise<void> {
+  const stories = await projectAPI.getStoriesByProjectId(currentProjectId);
+  if (!stories) return;
 
-  kanban.style.display = stories && stories.length > 0 ? "flex" : "none";
+  kanban.style.display = stories.length > 0 ? "flex" : "none";
 
   const todoContainer = document.getElementById("Todo-stories")!;
   const doingContainer = document.getElementById("Doing-stories")!;
   const doneContainer = document.getElementById("Done-stories")!;
-
-  if (!stories || !todoContainer || !doingContainer || !doneContainer) return;
+  if (!todoContainer || !doingContainer || !doneContainer) return;
 
   todoContainer.innerHTML = "";
   doingContainer.innerHTML = "";
   doneContainer.innerHTML = "";
 
-  const sortedStories = stories.sort((a, b) => {
-    const priorityOrder = { Low: 0, Medium: 1, High: 2 };
-    if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-      return priorityOrder[b.priority] - priorityOrder[a.priority];
-    } else {
-      return a.name.localeCompare(b.name);
-    }
-  });
+  const priorityOrder = { Low: 0, Medium: 1, High: 2 };
+  const sortedStories = stories.sort((a, b) =>
+    priorityOrder[b.priority] - priorityOrder[a.priority] || a.name.localeCompare(b.name)
+  );
 
-  function dragStart(event: any, storyId: string) {
-    event.dataTransfer.setData("text/plain", storyId);
-  }
+  const dragStart = (event: DragEvent, storyId: string) => {
+    event.dataTransfer?.setData("text/plain", storyId);
+  };
 
-  sortedStories.forEach((story) => {
-    const storyCard = createStoryCard(story);
+  for (const story of sortedStories) {
+    const storyCard = await createStoryCard(story);
+    if (!storyCard) continue;
+
     storyCard.id = story.id;
     storyCard.draggable = true;
-    storyCard.addEventListener("dragstart", (event) =>
-      dragStart(event, story.id)
-    );
+    storyCard.addEventListener("dragstart", (event) => dragStart(event, story.id));
 
-    const container = (status: string, containerElement: HTMLElement) => {
+    const appendToContainer = (
+      status: "Todo" | "Doing" | "Done",
+      containerElement: HTMLElement
+    ) => {
       if (story.status === status) {
         containerElement.appendChild(storyCard);
-        storyCard.classList.remove("Doing", "Done");
+        storyCard.classList.remove("Doing", "Done", "Todo");
         storyCard.classList.add(status);
       }
     };
 
-    container("Todo", todoContainer);
-    container("Doing", doingContainer);
-    container("Done", doneContainer);
-  });
+    appendToContainer("Todo", todoContainer);
+    appendToContainer("Doing", doingContainer);
+    appendToContainer("Done", doneContainer);
+  }
 }
 
 export function editStory(story: Story): void {
@@ -66,16 +63,23 @@ export function editStory(story: Story): void {
   document.body.appendChild(modal);
 }
 
-export function deleteStory(id: string): void {
-  projectAPI.deleteStory(id);
-  displayProjects();
-}
-export function showTasks(id: string): void {
-  const modal = showModalWithTasksForStory(id);
-  document.body.appendChild(modal);
+export async function deleteStory(id: string): Promise<void> {
+  try {
+    await projectAPI.deleteStory(id);
+    await displayProjects();
+  } catch (err) {
+    console.error("Błąd usuwania story:", err);
+  }
 }
 
-export function addStory(event: Event): void {
+export async function showTasks(id: string): Promise<void> {
+  const modal = await showModalWithTasksForStory(id);
+  if (modal) {
+    document.body.appendChild(modal);
+  }
+}
+
+export async function addStory(event: Event): Promise<void> {
   event.preventDefault();
   const errorMessageField = document.getElementById("error-message")!;
   errorMessageField.textContent = "";
@@ -85,7 +89,7 @@ export function addStory(event: Event): void {
     return;
   }
 
-  const modal = createAddStoryModal(selectedProjectId);
+  const modal = await createAddStoryModal(selectedProjectId);
   if (modal) {
     document.body.appendChild(modal);
   }

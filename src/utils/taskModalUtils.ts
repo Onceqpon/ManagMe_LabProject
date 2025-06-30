@@ -6,16 +6,13 @@ import {
   createLabeledOptionElement,
 } from "./domUtils";
 import { editTask, deleteTask } from "./taskManagerUtils";
-import UserDB from "../db/users";
 import { displayStoriesForCurrentProject } from "./storyManagerUtils";
 import { selectedProjectId } from "./projectManagerUtils";
 
 const projectAPI = new ProjectAPI();
 
-export function createEditTaskModal(task: Task): HTMLDivElement {
-  console.log(task);
-  console.log(task.id);
-
+// 🟢 MODAL DO EDYCJI
+export async function createEditTaskModal(task: Task): Promise<HTMLDivElement> {
   const modal = document.createElement("div");
   modal.className = "modal";
 
@@ -25,182 +22,117 @@ export function createEditTaskModal(task: Task): HTMLDivElement {
   const form = document.createElement("form");
   form.id = "edit-task-form";
 
-  const nameEdit = createLabeledInputElement(
-    "text",
-    "task-input",
-    task.name,
-    "Name: "
-  );
+  const nameEdit = createLabeledInputElement("text", "task-input", task.name, "Name: ");
+  const descriptionEdit = createLabeledInputElement("text", "task-input", task.description, "Description: ");
+  const statusEdit = createLabeledOptionElement("task-status", ["Todo", "Doing", "Done"], "Status: ", task.status);
+  const priorityEdit = createLabeledOptionElement("task-priority", ["Low", "Medium", "High"], "Priority: ", task.priority);
+  const estimatedTimeEdit = createLabeledInputElement("number", "estimated-time", task.estimated_time.toString(), "Estimated Time: ");
 
-  const descriptionEdit = createLabeledInputElement(
-    "text",
-    "task-input",
-    task.description,
-    "Description: "
-  );
+  const users = await projectAPI.getAllUsers();
+  const userOptions = [{ name: "Select a user", id: -1 }, ...users];
+  const selectedUserName = task.assigned_user_id
+    ? users.find((u) => u.id === task.assigned_user_id)?.name || "Select a user"
+    : "Select a user";
 
-  const statusEdit = createLabeledOptionElement(
-    "task-status",
-    ["Todo", "Doing", "Done"],
-    "Status: ",
-    task.status
-  );
-
-  const priorityEdit = createLabeledOptionElement(
-    "task-priority",
-    ["Low", "Medium", "High"],
-    "Priority: ",
-    task.priority
-  );
-
-  const estimatedTimeEdit = createLabeledInputElement(
-    "number",
-    "estimated-time",
-    task.estimatedTime.toString(),
-    "Estimated Time: "
-  );
-
-  const users = UserDB.getAll().map((user) => ({
-    name: user.name,
-    id: user.id,
-  }));
-  const assignedUser = createLabeledOptionElement(
+  const assignedUserSelect = createLabeledOptionElement(
     "assigned-user",
-    [{ name: "Select a user", id: -1 }, ...users].map((user) => user.name),
+    userOptions.map((u) => u.name),
     "Assign User: ",
-    task.assignedUserId
-      ? UserDB.getUserById(task.assignedUserId)?.name
-      : "Select a user"
+    selectedUserName
   );
 
-  const saveButton = createButton("Save", "modal-button", () => {
+  const saveButton = createButton("Save", "modal-button", async () => {
     const nameInputElement = nameEdit.querySelector("input");
     const descriptionInputElement = descriptionEdit.querySelector("input");
     const statusValue = statusEdit.querySelector("select")?.value as TaskStatus;
-    const priorityValue = priorityEdit.querySelector("select")
-      ?.value as TaskPriority;
-    const estimatedTimeValue = parseInt(
-      estimatedTimeEdit.querySelector("input")?.value || "0"
-    );
-    const assignedUserValue = assignedUser.querySelector("select")?.value;
+    const priorityValue = priorityEdit.querySelector("select")?.value as TaskPriority;
+    const estimatedTimeValue = parseInt(estimatedTimeEdit.querySelector("input")?.value || "0");
 
-    if (nameInputElement) task.name = nameInputElement.value;
-    if (descriptionInputElement)
-      task.description = descriptionInputElement.value;
+    task.name = nameInputElement?.value || task.name;
+    task.description = descriptionInputElement?.value || task.description;
     task.status = statusValue;
     task.priority = priorityValue;
-    task.estimatedTime = estimatedTimeValue;
+    task.estimated_time = estimatedTimeValue;
 
     if (statusValue === "Done") {
-      task.endAt = new Date();
+      task.end_at = new Date();
     } else {
-      task.endAt = undefined;
+      task.end_at = undefined;
     }
 
-    if (assignedUserValue !== "Select a user") {
+    const assignedUserValue = (document.getElementById("assigned-user") as HTMLSelectElement)?.value;
+    if (assignedUserValue && assignedUserValue !== "Select a user") {
       const user = users.find((user) => user.name === assignedUserValue);
       if (user) {
-        task.assignedUserId = user.id;
+        task.assigned_user_id = user.id;
         if (statusValue !== "Done" && statusValue !== "Doing") {
-          task.startAt = new Date();
+          task.start_at = new Date();
           task.status = TaskStatus.Doing;
         }
       }
     } else {
-      task.assignedUserId = undefined;
-      task.startAt = undefined;
+      task.assigned_user_id = undefined;
+      task.start_at = undefined;
       if (statusValue !== "Done") {
         task.status = TaskStatus.Todo;
       }
     }
 
-    projectAPI.updateTask(task);
+    await projectAPI.updateTask(task);
     modal.remove();
-    showModalWithTasksForStory(task.storyId);
+    await showModalWithTasksForStory(task.story_id);
   });
 
-  const goBackButton = createButton("Go Back", "modal-button cancel", () => {
+  const goBackButton = createButton("Go Back", "modal-button cancel", async () => {
     modal.remove();
-    showModalWithTasksForStory(task.storyId);
+    await showModalWithTasksForStory(task.story_id);
   });
 
-  form.append(
-    nameEdit,
-    descriptionEdit,
-    statusEdit,
-    priorityEdit,
-    estimatedTimeEdit,
-    assignedUser
-  );
+  form.append(nameEdit, descriptionEdit, statusEdit, priorityEdit, estimatedTimeEdit, assignedUserSelect);
   modalContent.append(form, saveButton, goBackButton);
   modal.appendChild(modalContent);
 
   return modal;
 }
 
-export function createTaskModal(storyId: string): HTMLDivElement {
+// 🟢 MODAL DO TWORZENIA
+export async function createTaskModal(storyId: string): Promise<HTMLDivElement> {
   const modal = document.createElement("div");
   modal.className = "modal";
+
   const modalContent = document.createElement("div");
   modalContent.className = "modal-content";
+
   const form = document.createElement("form");
   form.id = "edit-task-form";
 
   const name = createLabeledInputElement("text", "task-name", "", "Name: ");
-  const description = createLabeledInputElement(
-    "text",
-    "task-description",
-    "",
-    "Description: "
-  );
-  const priority = createLabeledOptionElement(
-    "task-priority",
-    ["Low", "Medium", "High"],
-    "Priority: "
-  );
-  const estimatedTime = createLabeledInputElement(
-    "number",
-    "estimated-time",
-    "",
-    "Estimated Time: "
-  );
+  const description = createLabeledInputElement("text", "task-description", "", "Description: ");
+  const priority = createLabeledOptionElement("task-priority", ["Low", "Medium", "High"], "Priority: ");
+  const estimatedTime = createLabeledInputElement("number", "estimated-time", "", "Estimated Time: ");
 
-  const addTaskButton = createButton("Add Task", "modal-button", () => {
+  const addTaskButton = createButton("Add Task", "modal-button", async () => {
     const nameValue = name.querySelector("input")?.value;
     const descriptionValue = description.querySelector("input")?.value;
-    const priorityValue = priority.querySelector("select")
-      ?.value as keyof typeof TaskPriority;
-    const estimatedTimeValue = parseInt(
-      estimatedTime.querySelector("input")?.value || "0",
-      10
-    );
+    const priorityValue = priority.querySelector("select")?.value as keyof typeof TaskPriority;
+    const estimatedTimeValue = parseInt(estimatedTime.querySelector("input")?.value || "0", 10);
 
-    if (
-      nameValue &&
-      descriptionValue &&
-      priorityValue &&
-      estimatedTimeValue &&
-      selectedProjectId !== null
-    ) {
-      const taskId = Date.now().toString();
-      const newTask = new Task(
-        taskId,
-        nameValue,
-        descriptionValue,
-        TaskPriority[priorityValue],
-        storyId,
-        selectedProjectId,
-        estimatedTimeValue
-      );
-      projectAPI.createTask(storyId, newTask);
+    if (nameValue && descriptionValue && priorityValue && selectedProjectId !== null) {
+      const taskId = crypto.randomUUID();
+      const newTask = new Task(taskId, nameValue, descriptionValue, TaskPriority[priorityValue], storyId, selectedProjectId, estimatedTimeValue);
+
+      newTask.start_at = new Date();
+      newTask.status = TaskStatus.Todo;
+
+      await projectAPI.createTask(storyId, newTask);
       modal.remove();
-      showModalWithTasksForStory(storyId);
+      await showModalWithTasksForStory(storyId);
     }
   });
 
-  const goBackButton = createButton("Go Back", "modal-button cancel", () => {
+  const goBackButton = createButton("Go Back", "modal-button cancel", async () => {
     modal.remove();
-    showModalWithTasksForStory(storyId);
+    await showModalWithTasksForStory(storyId);
   });
 
   form.append(name, description, priority, estimatedTime);
@@ -210,14 +142,16 @@ export function createTaskModal(storyId: string): HTMLDivElement {
   return modal;
 }
 
-export function showModalWithTasksForStory(storyId: string): HTMLDivElement {
+// 🟢 MODAL Z LISTĄ ZADAŃ
+export async function showModalWithTasksForStory(storyId: string): Promise<HTMLDivElement> {
   const modal = document.createElement("div");
   modal.className = "modal";
+
   const modalContent = document.createElement("div");
   modalContent.id = "task-modal-content";
   modalContent.className = "task-modal-content";
 
-  const tasks = projectAPI.getTasksByStoryId(storyId);
+  const tasks = await projectAPI.getTasksByStoryId(storyId);
 
   if (!tasks || tasks.length === 0) {
     const noTasksMessage = document.createElement("p");
@@ -225,31 +159,19 @@ export function showModalWithTasksForStory(storyId: string): HTMLDivElement {
     modalContent.appendChild(noTasksMessage);
   } else {
     const existingTable = document.getElementById("task-table");
-    if (existingTable) {
-      existingTable.remove();
-    }
+    if (existingTable) existingTable.remove();
 
     const table = document.createElement("table");
     table.id = "task-table";
 
     const headerRow = table.insertRow();
-    [
-      "Title",
-      "Priority",
-      "Status",
-      "Estimated Time",
-      "Created At",
-      "Assignee",
-      "Start At",
-      "End At",
-      "Actions",
-    ].forEach((headerText) => {
+    ["Title", "Priority", "Status", "Estimated Time", "Created At", "Assignee", "Start At", "End At", "Actions"].forEach((headerText) => {
       const headerCell = document.createElement("th");
       headerCell.textContent = headerText;
       headerRow.appendChild(headerCell);
     });
 
-    tasks.forEach((task) => {
+    for (const task of tasks) {
       const row = table.insertRow();
       row.id = task.id;
 
@@ -258,91 +180,60 @@ export function showModalWithTasksForStory(storyId: string): HTMLDivElement {
 
       const priorityCell = row.insertCell();
       priorityCell.textContent = task.priority;
-      if (task.priority === TaskPriority.High) {
-        priorityCell.style.color = "red";
-      } else if (task.priority === TaskPriority.Medium) {
-        priorityCell.style.color = "orange";
-      } else if (task.priority === TaskPriority.Low) {
-        priorityCell.style.color = "green";
-      }
+      priorityCell.style.color = task.priority === TaskPriority.High ? "red" : task.priority === TaskPriority.Medium ? "orange" : "green";
       priorityCell.style.fontWeight = "bold";
 
       const statusCell = row.insertCell();
       statusCell.textContent = task.status;
-      if (task.status === TaskStatus.Doing) {
-        statusCell.style.color = "blue";
-      } else if (task.status === TaskStatus.Done) {
-        statusCell.style.color = "green";
-      }
+      statusCell.style.color = task.status === TaskStatus.Doing ? "blue" : task.status === TaskStatus.Done ? "green" : "black";
       statusCell.style.fontWeight = "bold";
+
       const estimatedTimeCell = row.insertCell();
-      estimatedTimeCell.textContent = task.estimatedTime.toString();
+      estimatedTimeCell.textContent = task.estimated_time.toString();
 
       const createdAtCell = row.insertCell();
-      const createdAtDate = new Date(task.createdAt);
-      const formattedDate = createdAtDate.toLocaleDateString();
-      createdAtCell.textContent = formattedDate;
+      createdAtCell.textContent = new Date(task.created_at).toLocaleDateString();
 
       const assigneeCell = row.insertCell();
-      const assignedUser = task.assignedUserId
-        ? UserDB.getUserById(task.assignedUserId)
-        : undefined;
-      assigneeCell.textContent = assignedUser
-        ? assignedUser.name
-        : "Unassigned";
+      const assignedUser = task.assigned_user_id ? await projectAPI.getUserById(task.assigned_user_id) : undefined;
+      assigneeCell.textContent = assignedUser ? assignedUser.name : "Unassigned";
 
       const startAtCell = row.insertCell();
-      if (task.startAt) {
-        task.startAt = new Date(task.startAt);
-      }
-
-      startAtCell.textContent = task.startAt
-        ? task.startAt.toLocaleDateString()
-        : "Not started";
+      startAtCell.textContent = task.start_at ? new Date(task.start_at).toLocaleDateString() : "Not started";
 
       const endAtCell = row.insertCell();
-      if (task.endAt) {
-        task.endAt = new Date(task.endAt);
-      }
+      endAtCell.textContent = task.end_at ? new Date(task.end_at).toLocaleDateString() : "Not completed";
 
-      endAtCell.textContent = task.endAt
-        ? task.endAt.toLocaleDateString()
-        : "Not completed";
       const actionsCell = row.insertCell();
-      actionsCell.appendChild(
-        createButton("Edit", "modal-button active", () => {
-          editTask(task);
-          modal.remove();
-        })
-      );
-      actionsCell.appendChild(
-        createButton("Delete", "modal-button cancel", () => {
-          deleteTask(task.id, storyId);
-          modal.remove();
-        })
-      );
-    });
+      actionsCell.appendChild(createButton("Edit", "modal-button active", async () => {
+        const editModal = await createEditTaskModal(task);
+        modal.remove();
+        document.body.appendChild(editModal);
+      }));
+      actionsCell.appendChild(createButton("Delete", "modal-button cancel", async () => {
+        await projectAPI.deleteTask(task.id);
+        modal.remove();
+        await showModalWithTasksForStory(storyId);
+      }));
+    }
 
     modalContent.appendChild(table);
   }
 
-  const createTaskButton = createButton(
-    "Create Task",
-    "modal-button active",
-    () => {
-      const createTask = createTaskModal(storyId);
-      document.body.appendChild(createTask);
-      modal.remove();
-    }
-  );
+  const createTaskButton = createButton("Create Task", "modal-button active", async () => {
+    const createModal = await createTaskModal(storyId);
+    document.body.appendChild(createModal);
+    modal.remove();
+  });
+
   modalContent.appendChild(createTaskButton);
 
-  const goBackButton = createButton("Go Back", "modal-button cancel", () => {
+  const goBackButton = createButton("Go Back", "modal-button cancel", async () => {
     modal.remove();
-    displayStoriesForCurrentProject(selectedProjectId!);
+    await displayStoriesForCurrentProject(selectedProjectId!);
   });
-  modalContent.appendChild(goBackButton);
 
+  modalContent.appendChild(goBackButton);
   modal.appendChild(modalContent);
   document.body.appendChild(modal);
 

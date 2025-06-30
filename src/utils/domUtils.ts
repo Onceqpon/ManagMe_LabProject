@@ -1,16 +1,25 @@
 import { Story } from "../models/storyModel";
 import { editStory, deleteStory, showTasks } from "../utils/storyManagerUtils";
 import UsersDB from "../db/users";
+import ProjectAPI from "../managmeAPI/api";
+
+const projectAPI = new ProjectAPI();
 
 export function createButton(
   text: string,
   className: string,
-  clickHandler: () => void
+  clickHandler: () => void | Promise<void>
 ): HTMLButtonElement {
   const button = document.createElement("button");
   button.className = className;
   button.textContent = text;
-  button.addEventListener("click", clickHandler);
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    const result = clickHandler();
+    if (result instanceof Promise) {
+      result.catch((error) => console.error("Button handler error:", error));
+    }
+  });
   return button;
 }
 
@@ -67,7 +76,7 @@ export function createLabeledOptionElement(
   return container;
 }
 
-export function createStoryCard(story: Story): HTMLDivElement {
+export async function createStoryCard(story: Story): Promise<HTMLDivElement> {
   const storyCard = document.createElement("div");
   storyCard.className = "story-card";
 
@@ -89,7 +98,7 @@ export function createStoryCard(story: Story): HTMLDivElement {
   storyCard.appendChild(storyStatus);
 
   const storyCreatedAt = document.createElement("p");
-  const date = new Date(story.createdAt);
+  const date = new Date(story.created_at);
   const formattedDate = `${String(date.getDate()).padStart(2, "0")}.${String(
     date.getMonth() + 1
   ).padStart(2, "0")}.${date.getFullYear()}`;
@@ -97,25 +106,42 @@ export function createStoryCard(story: Story): HTMLDivElement {
   storyCard.appendChild(storyCreatedAt);
 
   const storyOwner = document.createElement("p");
-  storyOwner.textContent = "Author: " + UsersDB.getUserById(story.owner)?.name;
+  try {
+    const user = await UsersDB.getUserById(story.owner_id);
+    storyOwner.textContent = "Author: " + (user?.name || "Unknown");
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    storyOwner.textContent = "Author: Unknown";
+  }
   storyCard.appendChild(storyOwner);
 
   const taskAmount = document.createElement("p");
-  taskAmount.textContent = "Tasks: " + story.tasks.length;
+  try {
+    const taskList = await projectAPI.getTasksByStoryId(story.id);
+    taskAmount.textContent = "Tasks: " + (taskList?.length || 0);
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    taskAmount.textContent = "Tasks: ?";
+  }
   storyCard.appendChild(taskAmount);
 
-  const editButton = createButton("Edit", "edit-story-button", () =>
-    editStory(story)
-  );
-  const deleteButton = createButton("Delete", "delete-story-button", () =>
-    deleteStory(story.id)
-  );
+  const editButton = createButton("Edit", "edit-story-button", async () => {
+    await editStory(story);
+  });
+
+  const deleteButton = createButton("Delete", "delete-story-button", async () => {
+    await deleteStory(story.id);
+  });
+
   const showAllTasksForThisStory = createButton(
     "Show tasks",
     "show-tasks-button",
-    () => showTasks(story.id)
+    async () => {
+      await showTasks(story.id);
+    }
   );
+
   storyCard.append(editButton, deleteButton, showAllTasksForThisStory);
-  console.log(storyCard);
+
   return storyCard;
 }

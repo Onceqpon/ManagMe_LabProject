@@ -5,147 +5,136 @@ import {
 } from "../utils/projectManagerUtils";
 import { addStory } from "../utils/storyManagerUtils";
 import { dragLeave, dragOver, drop } from "../utils/dragAndDropUtils";
-import UsersDB from "../db/users";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode, JwtPayload } from "jwt-decode";
 
-export const currentUser = UsersDB.getAll()[0];
+export let currentUser: { id: string; name: string } | null = null;
 
-async function displayLoggedInUser() {
-  await fetch("http://localhost:5000/api/userinfo", {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.message === "Unauthorized") {
-        window.location.href = "/";
-      }
-      console.log("User data:", data);
-      const userNameSpan = document.getElementById("user-name");
-      if (userNameSpan) {
-        userNameSpan.textContent = data.user.name;
-      }
-    })
-    .catch((error) => {
-      console.error("Error:", error);
+async function fetchLoggedInUser(): Promise<void> {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/";
+      return;
+    }
+
+    const response = await fetch("http://localhost:5000/api/userinfo", {
+      headers: { Authorization: `Bearer ${token}` },
     });
+
+    const data = await response.json();
+    if (data.message === "Unauthorized" || !data.user) {
+      window.location.href = "/";
+      return;
+    }
+
+    currentUser = {
+      id: data.user.id,
+      name: data.user.name,
+    };
+
+    const userNameSpan = document.getElementById("user-name");
+    if (userNameSpan) {
+      userNameSpan.textContent = currentUser.name;
+    }
+
+    console.log("User data:", currentUser);
+  } catch (error) {
+    console.error("Error fetching user info:", error);
+    window.location.href = "/";
+  }
 }
 
-function logout() {
+function logout(): void {
   localStorage.removeItem("token");
   localStorage.removeItem("refreshToken");
   window.location.href = "/";
 }
 
-const isTokenExpired = (token: string) => {
-  if (!token) return true;
+function isTokenExpired(token: string): boolean {
   try {
-    const decodedToken = jwtDecode(token);
-    console.log("Decoded token:", decodedToken);
+    const decoded = jwtDecode<JwtPayload>(token);
     const currentTime = Date.now() / 1000;
-    return decodedToken.exp !== undefined && decodedToken.exp < currentTime;
+    return decoded.exp !== undefined && decoded.exp < currentTime;
   } catch (error) {
-    console.error("Error decoding token:", error);
+    console.error("Invalid token:", error);
     return true;
   }
-};
+}
 
 async function refreshAccessToken(): Promise<string | null> {
   const refreshToken = localStorage.getItem("refreshToken");
-  if (!refreshToken) {
-    console.log("No refresh token available.");
-    return null;
-  }
+  if (!refreshToken) return null;
 
   try {
     const response = await fetch("http://localhost:5000/api/refresh-token", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken }),
     });
 
-    if (!response.ok) {
-      console.error("Failed to refresh access token.");
-      return null;
-    }
+    if (!response.ok) return null;
 
     const data = await response.json();
     localStorage.setItem("token", data.token);
-
     return data.token;
   } catch (error) {
-    console.error("Error refreshing access token:", error);
+    console.error("Refresh token error:", error);
     return null;
   }
 }
-async function makeApiCall() {
+
+async function ensureAuthenticated(): Promise<void> {
   let token = localStorage.getItem("token");
 
-  if (token && isTokenExpired(token)) {
-    console.log("Token expired. Refreshing...");
+  if (!token || isTokenExpired(token)) {
     token = await refreshAccessToken();
-    console.log("New token:", token);
     if (!token) {
-      console.error("Failed to refresh token. Redirecting to login.");
-      window.location.href = "/";
+      logout();
       return;
-    } else {
-      displayLoggedInUser();
     }
-  } else {
-    displayLoggedInUser();
   }
+
+  await fetchLoggedInUser();
 }
 
-window.onload = function () {
-  makeApiCall();
+window.onload = async () => {
+  try {
+    await ensureAuthenticated();
 
-  document.getElementById("logout-button")?.addEventListener("click", logout);
+    document.getElementById("logout-button")?.addEventListener("click", logout);
 
-  deselectAllProjects();
-  const addButton = document.getElementById("add-button");
-  const addStoryButton = document.getElementById("add-story");
+    await deselectAllProjects(); // 🟢 TERAZ async
+    await displayProjects();     // 🟢 TERAZ async
 
-  addButton?.addEventListener("click", (event) => {
-    event.preventDefault();
-    addProject(event);
-  });
+    document.getElementById("add-button")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      try {
+        await addProject(e);
+      } catch (err) {
+        console.error("Error adding project:", err);
+      }
+    });
 
-  addStoryButton?.addEventListener("click", (event) => {
-    event.preventDefault();
-    addStory(event);
-  });
+    document.getElementById("add-story")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      try {
+        await addStory(e);
+      } catch (err) {
+        console.error("Error adding story:", err);
+      }
+    });
 
-  const todoContainer = document.getElementById("Todo-stories")!;
-  const doingContainer = document.getElementById("Doing-stories")!;
-  const doneContainer = document.getElementById("Done-stories")!;
+    const containers = ["Todo", "Doing", "Done"];
+    containers.forEach((status) => {
+      const container = document.getElementById(`${status}-stories`);
+      if (!container) return;
 
-  todoContainer.addEventListener("dragover", (event) =>
-    dragOver(event, "Todo")
-  );
-  todoContainer.addEventListener("drop", (event) => drop(event, "Todo"));
-  todoContainer.addEventListener("dragleave", (event) =>
-    dragLeave(event, "Todo")
-  );
-
-  doingContainer.addEventListener("dragover", (event) =>
-    dragOver(event, "Doing")
-  );
-  doingContainer.addEventListener("drop", (event) => drop(event, "Doing"));
-  doingContainer.addEventListener("dragleave", (event) =>
-    dragLeave(event, "Doing")
-  );
-
-  doneContainer.addEventListener("dragover", (event) =>
-    dragOver(event, "Done")
-  );
-  doneContainer.addEventListener("drop", (event) => drop(event, "Done"));
-  doneContainer.addEventListener("dragleave", (event) =>
-    dragLeave(event, "Done")
-  );
-
-  displayProjects();
+      container.addEventListener("dragover", (e) => dragOver(e, status as any));
+      container.addEventListener("drop", (e) => drop(e, status as any));
+      container.addEventListener("dragleave", (e) => dragLeave(e, status as any));
+    });
+  } catch (error) {
+    console.error("Unexpected error on init:", error);
+    logout();
+  }
 };

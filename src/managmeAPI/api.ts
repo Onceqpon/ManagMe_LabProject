@@ -1,164 +1,254 @@
+import { supabase } from "./supabaseClient";
 import Project from "../models/projectModel";
 import { Story } from "../models/storyModel";
 import { Task } from "../models/taskModel";
+import { User } from "../models/userModel";
+import { currentUser } from "../views/main";
 
 class ProjectAPI {
-  getTasksByProjectId(projectId: string): Task[] | null {
-    const tasks: Task[] = this.getAllTasks();
-    return tasks.filter((task) => task.projectId === projectId);
-  }
+  // ===== Tasks =====
 
-  getTasksByStoryId(storyId: string): Task[] | null {
-    const tasks: Task[] = this.getAllTasks();
-    return tasks.filter((task) => task.storyId === storyId);
-  }
-
-  updateTask(updatedTask: Task) {
-    const tasks: Task[] = this.getAllTasks();
-    const index: number = tasks.findIndex((task) => task.id === updatedTask.id);
-    if (index !== -1) {
-      tasks[index] = updatedTask;
-      localStorage.setItem("tasks", JSON.stringify(tasks));
+  async getTasksByProjectId(projectId: string): Promise<Task[] | null> {
+    const { data, error } = await supabase
+      .from("tasks")
+      .select("*")
+      .eq("project_id", projectId);
+    if (error) {
+      console.error(error);
+      return null;
     }
+    return data as Task[];
   }
 
-  deleteTask(taskId: string) {
-    // Usuwamy zadanie
-    const tasks: Task[] = this.getAllTasks().filter((task) => task.id !== taskId);
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-
-    // Zaktualizowanie stories
-    const stories: Story[] = this.getAllStories();
-    const updatedStories = stories.map((story) => {
-      if (Array.isArray(story.tasks)) {
-        const updatedTaskIds = story.tasks.filter((id) => id !== taskId);
-        return { ...story, tasks: updatedTaskIds };
-      }
-      return story;
-    });
-    localStorage.setItem("stories", JSON.stringify(updatedStories));
-  }
-
-  getTaskById(id: string): Task | null {
-    const tasks: Task[] = this.getAllTasks();
-    return tasks.find((task) => task.id === id) || null;
-  }
-
-  getAllProjects(): Project[] {
-    return JSON.parse(localStorage.getItem("projects") || "[]");
-  }
-
-  getAllTasks(): Task[] {
-    return JSON.parse(localStorage.getItem("tasks") || "[]");
-  }
-
-  getAllStories(): Story[] {
-    return JSON.parse(localStorage.getItem("stories") || "[]");
-  }
-
-  getStoriesByProjectId(projectId: string): Story[] | null {
-    const stories: Story[] = this.getAllStories();
-    return stories.filter((story) => story.project === projectId);
-  }
-
-  getProjectById(id: string): Project | undefined {
-    const projects: Project[] = this.getAllProjects();
-    return projects.find((project) => project.id === id);
-  }
-
-  createProject(project: Project): void {
-    const projects: Project[] = this.getAllProjects();
-    projects.push(project);
-    localStorage.setItem("projects", JSON.stringify(projects));
-  }
-
-  updateProject(updatedProject: Project): void {
-    const projects: Project[] = this.getAllProjects();
-    const index: number = projects.findIndex(
-      (project) => project.id === updatedProject.id
-    );
-    if (index !== -1) {
-      projects[index] = updatedProject;
-      localStorage.setItem("projects", JSON.stringify(projects));
+  async getTasksByStoryId(storyId: string): Promise<Task[] | null> {
+    const { data, error } = await supabase
+      .from("tasks")
+      .select("*")
+      .eq("story_id", storyId);
+    if (error) {
+      console.error(error);
+      return null;
     }
+    return data as Task[];
   }
 
-  updateStory(updatedStory: Story): void {
-    const stories: Story[] = this.getAllStories();
-    const index: number = stories.findIndex(
-      (story) => story.id === updatedStory.id
-    );
-    if (index !== -1) {
-      stories[index] = updatedStory;
-      localStorage.setItem("stories", JSON.stringify(stories));
+  async getTaskById(id: string): Promise<Task | null> {
+    const { data, error } = await supabase
+      .from("tasks")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error) {
+      console.error(error);
+      return null;
     }
+    return data as Task;
   }
 
-  createStory(projectId: string, story: Story): void {
-    const projects: Project[] = this.getAllProjects();
-    const project: Project | undefined = projects.find(
-      (project) => project.id === projectId
-    );
-    if (project) {
-      // Zapewniamy, że tasks jest tablicą
-      if (!Array.isArray(story.tasks)) {
-        story.tasks = [];
-      }
-      project.stories.push(story.id);
-      this.updateProject(project);
+  async createTask(storyId: string, task: Task): Promise<void> {
+    task.story_id = storyId;
+    const { error } = await supabase.from("tasks").insert([task]);
+    if (error) console.error("Błąd przy tworzeniu zadania:", error);
+  }
+
+  async updateTask(updatedTask: Task): Promise<void> {
+    const { error } = await supabase
+      .from("tasks")
+      .update(updatedTask)
+      .eq("id", updatedTask.id);
+    if (error) console.error(error);
+  }
+
+  async deleteTask(taskId: string): Promise<void> {
+    const { error } = await supabase
+      .from("tasks")
+      .delete()
+      .eq("id", taskId);
+    if (error) console.error(error);
+  }
+
+  async getAllTasks(): Promise<Task[]> {
+    const { data, error } = await supabase.from("tasks").select("*");
+    if (error) {
+      console.error(error);
+      return [];
     }
-    const stories: Story[] = this.getAllStories();
-    stories.push(story);
-    localStorage.setItem("stories", JSON.stringify(stories));
+    return data as Task[];
   }
 
-  createTask(storyId: string, task: Task): void {
-    const stories: Story[] = this.getAllStories();
-    const story: Story | undefined = stories.find(
-      (story) => story.id === storyId
-    );
-    if (story) {
-      // Zapewniamy, że tasks jest tablicą
-      if (!Array.isArray(story.tasks)) {
-        story.tasks = [];
-      }
-      story.tasks.push(task.id);
-      this.updateStory(story);
+  // ===== Stories =====
+
+  async getAllStories(): Promise<Story[]> {
+    const { data, error } = await supabase.from("stories").select("*");
+    if (error) {
+      console.error(error);
+      return [];
     }
-    const tasks: Task[] = this.getAllTasks();
-    tasks.push(task);
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+    return data as Story[];
   }
 
-  deleteProject(id: string): void {
-    const projects: Project[] = this.getAllProjects().filter(
-      (project) => project.id !== id
-    );
-    localStorage.setItem("projects", JSON.stringify(projects));
-  }
-
-  deleteStory(id: string): void {
-    const stories: Story[] = this.getAllStories().filter(
-      (story) => story.id !== id
-    );
-    localStorage.setItem("stories", JSON.stringify(stories));
-  }
-
-  deleteStoriesByProjectId(projectId: string): void {
-    const stories: Story[] = this.getAllStories();
-    const updatedStories = stories.filter(
-      (story) => story.project !== projectId
-    );
-    localStorage.setItem("stories", JSON.stringify(updatedStories));
-  }
-
-  getStoryById(id: string): Story | null {
-    const stories: Story[] = this.getAllStories();
-    const story = stories.find((story) => story.id === id);
-    if (story && !Array.isArray(story.tasks)) {
-      story.tasks = []; // Inicjalizujemy tasks, jeśli nie istnieje
+  async getStoryById(id: string): Promise<Story | null> {
+    const { data, error } = await supabase
+      .from("stories")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error) {
+      console.error(error);
+      return null;
     }
-    return story || null;
+    return data as Story;
+  }
+
+  async getStoriesByProjectId(projectId: string): Promise<Story[] | null> {
+    const { data, error } = await supabase
+      .from("stories")
+      .select("*")
+      .eq("project_id", projectId);
+    if (error) {
+      console.error(error);
+      return null;
+    }
+    return data as Story[];
+  }
+
+  async createStory(projectId: string, story: Story): Promise<void> {
+    const { id, name, description, priority, status, owner_id } = story;
+
+    const { error } = await supabase.from("stories").insert([{
+      id,
+      name,
+      description,
+      priority,
+      status,
+      project_id: projectId,
+      owner_id,
+    }]);
+
+    if (error) console.error("Błąd przy tworzeniu story:", error);
+  }
+
+  async updateStory(updatedStory: Story): Promise<void> {
+    const { error } = await supabase
+      .from("stories")
+      .update(updatedStory)
+      .eq("id", updatedStory.id);
+    if (error) console.error(error);
+  }
+
+  async deleteStory(id: string): Promise<void> {
+    const { error } = await supabase
+      .from("stories")
+      .delete()
+      .eq("id", id);
+    if (error) console.error(error);
+  }
+
+  async deleteStoriesByProjectId(projectId: string): Promise<void> {
+    const { error } = await supabase
+      .from("stories")
+      .delete()
+      .eq("project_id", projectId);
+    if (error) console.error(error);
+  }
+
+  // ===== Projects =====
+
+  async getAllProjects(): Promise<Project[]> {
+    const { data, error } = await supabase.from("projects").select("*");
+    if (error) {
+      console.error(error);
+      return [];
+    }
+    return data as Project[];
+  }
+
+  async getProjectsByUser(): Promise<Project[]> {
+  if (!currentUser?.id) {
+    console.error("Brak zalogowanego użytkownika");
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("owner_id", currentUser.id);
+
+  if (error) {
+    console.error("Błąd przy pobieraniu projektów użytkownika:", error);
+    return [];
+  }
+
+  return data as Project[];
+}
+
+  async getProjectById(id: string): Promise<Project | null> {
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error) {
+      console.error(error);
+      return null;
+    }
+    return data as Project;
+  }
+
+  async createProject(project: Project): Promise<void> {
+    const { id, name, description, active, owner_id } = project;
+
+    const { error } = await supabase.from("projects").insert([{
+      id,
+      name,
+      description,
+      active,
+      owner_id: owner_id, // 👈 ważne: snake_case
+    }]);
+
+    if (error) console.error("Błąd przy tworzeniu projektu:", error);
+  }
+
+  async updateProject(updatedProject: Project): Promise<void> {
+    const { error } = await supabase
+      .from("projects")
+      .update(updatedProject)
+      .eq("id", updatedProject.id);
+    if (error) console.error(error);
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    const { error } = await supabase
+      .from("projects")
+      .delete()
+      .eq("id", id);
+    if (error) console.error(error);
+  }
+
+  // ===== Users =====
+
+  async getAllUsers(): Promise<User[]> {
+    const { data, error } = await supabase.from("users").select("*");
+    if (error) {
+      console.error("Błąd przy pobieraniu użytkowników:", error);
+      return [];
+    }
+    return data || [];
+  }
+
+  async getUserById(id: string): Promise<User | null> {
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error("Błąd przy pobieraniu użytkownika:", error);
+      return null;
+    }
+
+    return data;
   }
 }
 

@@ -19,44 +19,44 @@ class Task {
   name: string;
   description: string;
   priority: TaskPriority;
-  storyId: Story["id"];
-  projectId: Project["id"];
-  estimatedTime: number;
+  story_id: Story["id"];
+  project_id: Project["id"];
+  estimated_time: number;
   status: TaskStatus;
-  createdAt: Date;
-  startAt?: Date;
-  endAt?: Date;
-  assignedUserId?: User["id"];
+  created_at: Date;
+  start_at?: Date;
+  end_at?: Date;
+  assigned_user_id?: User["id"];
 
   constructor(
     id: string,
     name: string,
     description: string,
     priority: TaskPriority,
-    storyId: Story["id"],
-    projectId: Project["id"],
-    estimatedTime: number
+    story_id: Story["id"],
+    project_id: Project["id"],
+    estimated_time: number
   ) {
     this.id = id;
     this.name = name;
     this.description = description;
     this.priority = priority;
-    this.storyId = storyId;
-    this.projectId = projectId;
-    this.estimatedTime = estimatedTime;
+    this.story_id = story_id;
+    this.project_id = project_id;
+    this.estimated_time = estimated_time;
     this.status = TaskStatus.Todo;
-    this.createdAt = new Date();
+    this.created_at = new Date();
   }
 
   startTask(user: User) {
     this.status = TaskStatus.Doing;
-    this.startAt = new Date();
-    this.assignedUserId = user.id;
+    this.start_at = new Date();
+    this.assigned_user_id = user.id;
   }
 
   completeTask() {
     this.status = TaskStatus.Done;
-    this.endAt = new Date();
+    this.end_at = new Date();
   }
 }
 
