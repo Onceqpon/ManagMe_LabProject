@@ -1,31 +1,38 @@
-
+@use "bootstrap/scss/bootstrap" as *;
 @use "variablesLogin" as vl;
 
 body {
   background-color: vl.$light-bg;
   color: vl.$light-text;
   font-family: Arial, sans-serif;
+  min-height: 100vh;
+  margin: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  margin: 0;
 }
 
+// Ikona przełączania motywu
 .theme-container {
   position: absolute;
   right: 30px;
   top: 30px;
 
   #toggleThemeBtn {
-    background-color: vl.$light-container-bg;
-    color: vl.$light-text;
-    border: 1px solid vl.$light-container-bg;
-    border-radius: vl.$border-radius;
+    display: inline-block;
+    font-weight: 500;
     padding: 8px 12px;
+    font-size: 1rem;
+    text-align: center;
+    border: 1px solid vl.$light-container-bg;
+    background-color: rgb(100, 100, 243);
+    color: vl.$light-text;
+    border-radius: vl.$border-radius;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 
     &:hover {
-      background-color: vl.$light-container-bg;
+      background-color: darken(vl.$light-container-bg, 5%);
     }
 
     #themeIcon {
@@ -34,13 +41,14 @@ body {
   }
 }
 
+// Kontener logowania w stylu Bootstrap Card
 .login-container {
   max-width: 500px;
   width: 90%;
   padding: 2rem;
   background-color: vl.$light-container-bg;
   border-radius: vl.$border-radius;
-  border: 2px solid vl.$light-container-bg, 10%;
+  border: 2px solid rgba(vl.$light-container-bg, 0.1);
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
 
   h2 {
@@ -50,6 +58,7 @@ body {
   }
 }
 
+// Formularz logowania
 #login-form {
   display: flex;
   flex-direction: column;
@@ -72,12 +81,12 @@ body {
 
       &:focus {
         outline: none;
-        border-color: vl.$light-container-bg;
+        border-color: darken(vl.$light-container-bg, 10%);
         box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
       }
 
       &::placeholder {
-        color: vl.$light-container-bg;
+        color: lighten(vl.$light-text, 30%);
       }
     }
   }
@@ -88,7 +97,7 @@ body {
     font-size: 16px;
     border-radius: vl.$border-radius;
     font-weight: vl.$font-weight-bold;
-    background-color: vl.$light-container-bg;
+    background-color: rgb(54, 126, 235);
     color: vl.$light-text;
     border: none;
     cursor: pointer;
@@ -96,7 +105,7 @@ body {
     margin-top: 0.5rem;
 
     &:hover {
-      background-color: vl.$light-container-bg;
+      background-color: darken(vl.$light-container-bg, 5%);
       transform: translateY(-1px);
     }
 
@@ -106,6 +115,7 @@ body {
   }
 }
 
+// Komunikat o błędzie
 .error-message {
   color: #ff4444;
   margin-top: 1rem;

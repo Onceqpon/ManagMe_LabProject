@@ -1,22 +1,27 @@
+@use "bootstrap/scss/bootstrap" as *;
 @use "variablesMain" as vm;
 
+// Global body styles (ciemnawy motyw)
 body {
   background-color: vm.$dark-bg;
   color: vm.$dark-text;
   font-family: Arial, sans-serif;
+  min-height: 100vh;
+  margin: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  margin: 0;
 }
 
+// Pozycja i wygląd przycisku zmiany motywu
 .theme-container {
   position: absolute;
-  right: 30px;
   top: 30px;
+  right: 30px;
 
   #toggleThemeBtn {
+    @extend .btn;
+    @extend .btn-outline-light;
     background-color: vm.$dark-button-bg;
     color: vm.$dark-text;
     border: 1px solid vm.$dark-border-color;
@@ -33,66 +38,74 @@ body {
   }
 }
 
+// Kontener logowania — jak Bootstrapowa karta (card)
 .login-container {
-  max-width: 500px;
-  width: 90%;
-  padding: 2rem;
+  @extend .card;
   background-color: vm.$dark-container-bg;
+  color: vm.$dark-text;
   border-radius: vm.$dark-border-radius;
   border: 2px solid vm.$dark-border-color;
   box-shadow: 0 0.5rem 1rem rgba(vm.$dark-text, 0.15);
+  padding: 2rem;
+  width: 90%;
+  max-width: 500px;
 
   h2 {
-    margin-bottom: 2rem;
     text-align: center;
+    margin-bottom: 2rem;
     color: vm.$dark-text;
   }
 }
 
+// Formularz logowania
 #login-form {
-  display: flex;
-  flex-direction: column;
+  @extend .d-flex;
+  @extend .flex-column;
   gap: 1.5rem;
 
-  .input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  // Każde pole formularza
+  .form-group {
+    @extend .mb-3;
+
+    label {
+      color: vm.$dark-text;
+    }
 
     .form-control {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: vm.$dark-border-radius;
-      border: 1px solid vm.$dark-border-color;
       background-color: vm.$dark-container-bg;
       color: vm.$dark-text;
+      border: 1px solid vm.$dark-border-color;
+      border-radius: vm.$dark-border-radius;
+      padding: 12px;
+      font-size: 16px;
       transition: border-color 0.3s ease;
+
+      &::placeholder {
+        color: lighten(vm.$dark-text, 20%);
+      }
 
       &:focus {
         outline: none;
         border-color: vm.$dark-border-color;
         box-shadow: 0 0 0 2px rgba(vm.$dark-button-bg, 0.25);
       }
-
-      &::placeholder {
-        color:vm.$dark-container-bg;
-      }
     }
   }
 
+  // Przycisk zaloguj
   .btn-primary {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    border-radius: vm.$dark-border-radius;
-    font-weight: bold;
+    @extend .btn;
+    @extend .btn-primary;
     background-color: vm.$dark-button-bg;
     color: vm.$dark-text;
+    border-radius: vm.$dark-border-radius;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 0.5rem;
     border: none;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-top: 0.5rem;
 
     &:hover {
       background-color: vm.$dark-button-hover-bg;
@@ -105,6 +118,7 @@ body {
   }
 }
 
+// Błąd logowania
 .error-message {
   color: #ff4444;
   margin-top: 1rem;
