@@ -1,10 +1,9 @@
-@import "../../node_modules/bootstrap/scss/functions";
-@import "../../node_modules/bootstrap/scss/variables";
-@import "variablesLogin";
+
+@use "variablesLogin" as vl;
 
 body {
-  background-color: $light-bg;
-  color: $light-text;
+  background-color: vl.$light-bg;
+  color: vl.$light-text;
   font-family: Arial, sans-serif;
   display: flex;
   justify-content: center;
@@ -17,18 +16,18 @@ body {
   position: absolute;
   right: 30px;
   top: 30px;
-  
+
   #toggleThemeBtn {
-    background-color: $light-container-bg;
-    color: $light-text;
-    border: 1px solid darken($light-container-bg, 15%);
-    border-radius: $border-radius;
+    background-color: vl.$light-container-bg;
+    color: vl.$light-text;
+    border: 1px solid vl.$light-container-bg;
+    border-radius: vl.$border-radius;
     padding: 8px 12px;
-    
+
     &:hover {
-      background-color: darken($light-container-bg, 5%);
+      background-color: vl.$light-container-bg;
     }
-    
+
     #themeIcon {
       font-size: 1.2rem;
     }
@@ -39,15 +38,15 @@ body {
   max-width: 500px;
   width: 90%;
   padding: 2rem;
-  background-color: $light-container-bg;
-  border-radius: $border-radius;
-  border: 2px solid darken($light-container-bg, 10%);
+  background-color: vl.$light-container-bg;
+  border-radius: vl.$border-radius;
+  border: 2px solid vl.$light-container-bg, 10%;
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
 
   h2 {
     margin-bottom: 2rem;
     text-align: center;
-    color: $light-text;
+    color: vl.$light-text;
   }
 }
 
@@ -65,20 +64,20 @@ body {
       width: 100%;
       padding: 12px;
       font-size: 16px;
-      border-radius: $border-radius;
-      border: 1px solid darken($light-container-bg, 15%);
-      background-color: $light-container-bg;
-      color: $light-text;
+      border-radius: vl.$border-radius;
+      border: 1px solid vl.$light-container-bg;
+      background-color: vl.$light-container-bg;
+      color: vl.$light-text;
       transition: border-color 0.3s ease;
 
       &:focus {
         outline: none;
-        border-color: darken($light-container-bg, 25%);
+        border-color: vl.$light-container-bg;
         box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
       }
 
       &::placeholder {
-        color: darken($light-container-bg, 30%);
+        color: vl.$light-container-bg;
       }
     }
   }
@@ -87,17 +86,17 @@ body {
     width: 100%;
     padding: 12px;
     font-size: 16px;
-    border-radius: $border-radius;
-    font-weight: $font-weight-bold;
-    background-color: darken($light-container-bg, 15%);
-    color: $light-text;
+    border-radius: vl.$border-radius;
+    font-weight: vl.$font-weight-bold;
+    background-color: vl.$light-container-bg;
+    color: vl.$light-text;
     border: none;
     cursor: pointer;
     transition: all 0.3s ease;
     margin-top: 0.5rem;
 
     &:hover {
-      background-color: darken($light-container-bg, 20%);
+      background-color: vl.$light-container-bg;
       transform: translateY(-1px);
     }
 

@@ -1,10 +1,8 @@
-@import "../../node_modules/bootstrap/scss/functions";
-@import "../../node_modules/bootstrap/scss/variables";
-@import "variablesMain";
+@use "variablesMain" as vm;
 
 body {
-  background-color: $dark-bg;
-  color: $dark-text;
+  background-color: vm.$dark-bg;
+  color: vm.$dark-text;
   font-family: Arial, sans-serif;
   display: flex;
   justify-content: center;
@@ -17,18 +15,18 @@ body {
   position: absolute;
   right: 30px;
   top: 30px;
-  
+
   #toggleThemeBtn {
-    background-color: $dark-button-bg;
-    color: $dark-text;
-    border: 1px solid $dark-border-color;
-    border-radius: $dark-border-radius;
+    background-color: vm.$dark-button-bg;
+    color: vm.$dark-text;
+    border: 1px solid vm.$dark-border-color;
+    border-radius: vm.$dark-border-radius;
     padding: 8px 12px;
-    
+
     &:hover {
-      background-color: $dark-button-hover-bg;
+      background-color: vm.$dark-button-hover-bg;
     }
-    
+
     #themeIcon {
       font-size: 1.2rem;
     }
@@ -39,15 +37,15 @@ body {
   max-width: 500px;
   width: 90%;
   padding: 2rem;
-  background-color: $dark-container-bg;
-  border-radius: $dark-border-radius;
-  border: 2px solid $dark-border-color;
-  box-shadow: 0 0.5rem 1rem rgba($dark-text, 0.15);
+  background-color: vm.$dark-container-bg;
+  border-radius: vm.$dark-border-radius;
+  border: 2px solid vm.$dark-border-color;
+  box-shadow: 0 0.5rem 1rem rgba(vm.$dark-text, 0.15);
 
   h2 {
     margin-bottom: 2rem;
     text-align: center;
-    color: $dark-text;
+    color: vm.$dark-text;
   }
 }
 
@@ -65,20 +63,20 @@ body {
       width: 100%;
       padding: 12px;
       font-size: 16px;
-      border-radius: $dark-border-radius;
-      border: 1px solid $dark-border-color;
-      background-color: darken($dark-container-bg, 5%);
-      color: $dark-text;
+      border-radius: vm.$dark-border-radius;
+      border: 1px solid vm.$dark-border-color;
+      background-color: vm.$dark-container-bg;
+      color: vm.$dark-text;
       transition: border-color 0.3s ease;
 
       &:focus {
         outline: none;
-        border-color: lighten($dark-border-color, 15%);
-        box-shadow: 0 0 0 2px rgba($dark-button-bg, 0.25);
+        border-color: vm.$dark-border-color;
+        box-shadow: 0 0 0 2px rgba(vm.$dark-button-bg, 0.25);
       }
 
       &::placeholder {
-        color: lighten($dark-container-bg, 30%);
+        color:vm.$dark-container-bg;
       }
     }
   }
@@ -87,17 +85,17 @@ body {
     width: 100%;
     padding: 12px;
     font-size: 16px;
-    border-radius: $dark-border-radius;
+    border-radius: vm.$dark-border-radius;
     font-weight: bold;
-    background-color: $dark-button-bg;
-    color: $dark-text;
+    background-color: vm.$dark-button-bg;
+    color: vm.$dark-text;
     border: none;
     cursor: pointer;
     transition: all 0.3s ease;
     margin-top: 0.5rem;
 
     &:hover {
-      background-color: $dark-button-hover-bg;
+      background-color: vm.$dark-button-hover-bg;
       transform: translateY(-1px);
     }
 
