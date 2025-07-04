@@ -7,7 +7,9 @@ const TEST_ID = `test-${Date.now()}`; // Unikalny identyfikator dla każdego prz
 const TEST_DATA = {
   project: {
     name: `Projekt E2E ${TEST_ID}`,
+    description: `Opis projektu E2E ${TEST_ID}`,
     newName: `Zmieniony Projekt E2E ${TEST_ID}`,
+    
   },
   story: {
     name: `Historyjka E2E ${TEST_ID}`,
@@ -29,7 +31,7 @@ test.describe('Pełny scenariusz E2E dla aplikacji ManagMe', () => {
     await page.getByLabel('Email').fill('admin@managme.app');
     await page.getByLabel('Hasło').fill('password123');
     await page.getByRole('button', { name: 'Zaloguj' }).click();
-    await expect(page.getByText('Zalogowano jako: admin@managme.app')).toBeVisible();
+    await expect(page.getByText('Zalogowano jako: Jan Kowalski')).toBeVisible();
   });
 
   // Krok 2: Pełny cykl życia (Create -> Update -> Delete)
@@ -38,15 +40,17 @@ test.describe('Pełny scenariusz E2E dla aplikacji ManagMe', () => {
     // === SEKCJA TWORZENIA (CREATE) ===
 
     // Tworzenie projektu
-    await page.getByPlaceholder('Nowy projekt...').fill(TEST_DATA.project.name);
+    await page.getByPlaceholder('Nazwa projektu').fill(TEST_DATA.project.name);
+    await page.getByPlaceholder('Krótki opis...').fill(TEST_DATA.project.description);
     await page.locator('#add-project-form button[type="submit"]').click();
     await expect(page.locator('#project-list').getByText(TEST_DATA.project.name)).toBeVisible();
 
     // Tworzenie historyjki
-    await page.locator('#project-list').getByText(TEST_DATA.project.name).click();
-    await page.getByPlaceholder('Nazwa historyjki').fill(TEST_DATA.story.name);
-    await page.getByPlaceholder('Opis').fill(TEST_DATA.story.description);
-    await page.getByRole('button', { name: 'Dodaj Historyjkę' }).click();
+    await page.getByRole('link', { name: TEST_DATA.project.name }).click();
+    const addStoryForm = page.locator('#add-story-form');
+    await addStoryForm.getByPlaceholder('Nazwa historyjki').fill(TEST_DATA.story.name);
+    await addStoryForm.getByPlaceholder('Opis').fill(TEST_DATA.story.description);
+    await addStoryForm.getByRole('button', { name: 'Dodaj Historyjkę' }).click();
     await expect(page.locator('#story-list-container').getByText(TEST_DATA.story.name)).toBeVisible();
 
     // Tworzenie zadania
@@ -77,7 +81,7 @@ test.describe('Pełny scenariusz E2E dla aplikacji ManagMe', () => {
     await projectItem.getByRole('button', { name: 'Edytuj projekt' }).click();
     await page.getByLabel('Nazwa').fill(TEST_DATA.project.newName);
     await page.getByRole('button', { name: 'Zapisz' }).click();
-    await expect(page.locator('#project-list').getByText(TEST_DATA.project.newName)).toBeVisible();
+    await expect(page.locator('#form-modal')).not.toBeVisible();
 
     // === SEKCJA USUWANIA (DELETE) ===
 

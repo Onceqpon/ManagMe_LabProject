@@ -1,15 +1,8 @@
-import type { Priority, Status } from './Story'; // Reużywamy istniejących typów
-
-export type Task = {
-  id: string;
-  name: string;
-  description: string;
-  priority: Priority;
-  storyId: string;
-  status: Status;
-  estimatedTime: number; // w godzinach
-  createdAt: string; // ISO Date
-  startedAt: string | null;
-  completedAt: string | null;
-  assigneeId: string | null;
-};
+export interface Task {
+        id: string;
+        name: string;
+        status: 'todo' | 'doing' | 'done';
+        estimated_time?: number;
+        assignee_id?: string;
+        users?: { first_name?: string; last_name?: string };
+    }

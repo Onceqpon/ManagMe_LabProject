@@ -1,8 +1,5 @@
-export type Role = 'admin' | 'devops' | 'developer';
-
-export type User = {
-  id: string;
-  firstName: string;
-  lastName:string;
-  role: Role;
-};
+ export interface User {
+        id: string;
+        first_name: string;
+        last_name: string;
+    }
