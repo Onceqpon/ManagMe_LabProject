@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             currentUser = await ApiService.request('/me');
             const userPanel = document.getElementById('user-panel');
-            if (userPanel) userPanel.textContent = `Zalogowano jako: ${currentUser.email}`;
+            if (userPanel) userPanel.textContent = `Zalogowano jako: ${currentUser.first_name} ${currentUser.last_name}`;
             authContainer.classList.add('hidden');
             appView.classList.remove('hidden');
             render();
@@ -115,23 +115,41 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!projectListDiv) return;
         projectListDiv.innerHTML = '';
         projects.forEach(project => {
-            const projectEl = document.createElement('div');
+            const projectEl = document.createElement('a');
+            projectEl.href = '#';
             projectEl.className = `list-group-item list-group-item-action d-flex justify-content-between align-items-center ${project.id === activeProjectId ? 'active' : ''}`;
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = project.name;
-            nameSpan.style.cursor = 'pointer';
-            nameSpan.style.flexGrow = '1';
-            nameSpan.addEventListener('click', () => { activeProjectId = project.id; activeStoryId = null; render(); });
+            
+            const textContainer = document.createElement('div');
+            textContainer.style.flexGrow = '1';
+            textContainer.addEventListener('click', (e) => {
+                e.preventDefault();
+                activeProjectId = project.id; 
+                activeStoryId = null; 
+                render(); 
+            });
+
+            const nameH6 = document.createElement('h6');
+            nameH6.className = 'mb-1';
+            nameH6.textContent = project.name;
+
+            const descriptionP = document.createElement('p');
+            descriptionP.className = 'mb-1 small text-muted';
+            descriptionP.textContent = project.description || 'Brak opisu';
+
+            textContainer.appendChild(nameH6);
+            textContainer.appendChild(descriptionP);
+
             const buttonsDiv = document.createElement('div');
-            // ZMIANA: Dodanie aria-label
-            buttonsDiv.innerHTML = `<button class="btn btn-sm btn-outline-secondary me-2 edit-btn" title="Edytuj projekt" aria-label="Edytuj projekt"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-outline-danger delete-btn" title="Usuń projekt" aria-label="Usuń projekt"><i class="bi bi-trash"></i></button>`;
-            buttonsDiv.querySelector('.edit-btn')?.addEventListener('click', () => openEditModal('project', project));
-            buttonsDiv.querySelector('.delete-btn')?.addEventListener('click', () => openDeleteModal('project', project));
-            projectEl.appendChild(nameSpan);
+            buttonsDiv.innerHTML = `<button class="btn btn-sm btn-outline-secondary ms-2 edit-btn" title="Edytuj projekt" aria-label="Edytuj projekt"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-outline-danger delete-btn" title="Usuń projekt" aria-label="Usuń projekt"><i class="bi bi-trash"></i></button>`;
+            buttonsDiv.querySelector('.edit-btn')?.addEventListener('click', (e) => { e.stopPropagation(); openEditModal('project', project); });
+            buttonsDiv.querySelector('.delete-btn')?.addEventListener('click', (e) => { e.stopPropagation(); openDeleteModal('project', project); });
+            
+            projectEl.appendChild(textContainer);
             projectEl.appendChild(buttonsDiv);
             projectListDiv.appendChild(projectEl);
         });
     }
+
 
     function renderStories(stories: any[]) {
         const storyListContainer = document.getElementById('story-list-container');
@@ -244,8 +262,20 @@ document.addEventListener('DOMContentLoaded', () => {
         formModal.show();
     }
 
+
     const addProjectForm = document.getElementById('add-project-form') as HTMLFormElement;
-    if (addProjectForm) addProjectForm.addEventListener('submit', async (e) => { e.preventDefault(); await ApiService.request('/projects', 'POST', { name: (new FormData(addProjectForm).get('name') as string) }); addProjectForm.reset(); render(); });
+    if (addProjectForm) {
+        addProjectForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(addProjectForm);
+            const name = formData.get('name') as string;
+            const description = formData.get('description') as string;
+            await ApiService.request('/projects', 'POST', { name, description });
+            addProjectForm.reset();
+            render();
+        });
+    }
+
     const addStoryForm = document.getElementById('add-story-form') as HTMLFormElement;
     if (addStoryForm) addStoryForm.addEventListener('submit', async (e) => { e.preventDefault(); if (!activeProjectId) return; const fd = new FormData(addStoryForm); await ApiService.request('/stories', 'POST', { name: fd.get('name'), description: fd.get('description'), priority: fd.get('priority'), project_id: activeProjectId }); addStoryForm.reset(); render(); });
     const backToStoriesBtn = document.getElementById('back-to-stories-btn');
