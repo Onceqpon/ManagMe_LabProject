@@ -11,7 +11,7 @@ const tokenSecret = process.env.TOKEN_SECRET || 'DEFAULT_SECRET_KEY_!@#$';
 app.use(cors());
 app.use(express.json());
 
-// --- Funkcje pomocnicze ---
+
 function generateToken(userId: string, userRole: string, expirationInSeconds: number) {
     const payload = { id: userId, role: userRole, exp: Math.floor(Date.now() / 1000) + expirationInSeconds };
     return jwt.sign(payload, tokenSecret);
@@ -29,7 +29,7 @@ function verifyToken(req: any, res: any, next: any) {
     });
 }
 
-// --- Endpointy autoryzacji ---
+
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const { data: user, error } = await supabase.from('users').select('*').eq('email', email).single();
@@ -55,7 +55,7 @@ app.get('/users/assignable', verifyToken, async (req, res) => {
     res.send(data);
 });
 
-// --- Endpointy Projektów ---
+
 app.get('/projects', verifyToken, async (req: any, res) => {
     const { data, error } = await supabase.from('projects').select('*').eq('user_id', req.user.id);
     if (error) return res.status(500).send(error);
@@ -84,7 +84,7 @@ app.delete('/projects/:projectId', verifyToken, async (req, res) => {
     res.status(204).send();
 });
 
-// --- Endpointy Historyjek (Stories) ---
+
 app.get('/projects/:projectId/stories', verifyToken, async (req, res) => {
     const { projectId } = req.params;
     const { data, error } = await supabase.from('stories').select('*').eq('project_id', projectId);
@@ -114,7 +114,7 @@ app.delete('/stories/:storyId', verifyToken, async (req, res) => {
     res.status(204).send();
 });
 
-// --- Endpointy Zadań (Tasks) ---
+
 app.get('/stories/:storyId/tasks', verifyToken, async (req, res) => {
     const { storyId } = req.params;
     const { data, error } = await supabase.from('tasks').select('*, users(first_name, last_name)').eq('story_id', storyId);

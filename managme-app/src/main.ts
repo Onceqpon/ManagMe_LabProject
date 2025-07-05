@@ -3,7 +3,6 @@ import type { User, Project, Story, Task } from './models/models';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- API SERVICE ---
     const ApiService = {
         baseUrl: 'http://localhost:3000',
         async request<T>(endpoint: string, method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET', body: any = null): Promise<T> {
@@ -38,12 +37,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- STATE ---
     let currentUser: User | null = null;
     let activeProjectId: string | null = null;
     let activeStoryId: string | null = null;
 
-    // --- DOM ELEMENTS ---
     const modalElement = document.getElementById('form-modal')!;
     // @ts-ignore - bootstrap is loaded globally
     const formModal = bootstrap.Modal.getOrCreateInstance(modalElement);
@@ -55,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeToggler = document.getElementById('theme-toggler');
     const logoutBtn = document.getElementById('logout-btn');
 
-    // --- RENDER FUNCTIONS ---
     function renderProjects(projects: Project[]) {
         const projectListDiv = document.getElementById('project-list');
         if (!projectListDiv) return;
@@ -198,7 +194,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- MODAL & FORM FUNCTIONS ---
     function getEndpoint(type: 'project' | 'story' | 'task', id: string): string {
         const plural = (type === 'story') ? 'stories' : `${type}s`;
         return `/${plural}/${id}`;
@@ -282,8 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         formModal.show();
     }
-    
-    // --- EVENT HANDLERS ---
+
     async function handleLoginSubmit(event: Event) {
         event.preventDefault();
         const email = (document.getElementById('login-email-input') as HTMLInputElement).value;
@@ -362,7 +356,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.reload();
     }
     
-    // --- INITIALIZATION ---
     async function initializeApp() {
         const authContainer = document.getElementById('auth-container')!;
         const appView = document.getElementById('app')!;
@@ -387,7 +380,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- SETUP LISTENERS ---
     if (loginForm) loginForm.addEventListener('submit', handleLoginSubmit);
     if (addProjectForm) addProjectForm.addEventListener('submit', handleAddProjectSubmit);
     if (addStoryForm) addStoryForm.addEventListener('submit', handleAddStorySubmit);
@@ -396,6 +388,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (themeToggler) setupTheme();
     if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
 
-    // --- START ---
     initializeApp();
 });
